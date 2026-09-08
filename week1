@@ -1,0 +1,101 @@
+function setup() {
+  createCanvas(600, 400);
+}
+makePixelCanvas(280, 20, 6, 4);
+
+
+function makePixelCanvas(xOffset, yOffset, width, length) {
+  for(y=0; y<width; y++) {
+    for(x=0; x<length; x++) {
+      strokeWeight(1);
+      fill(255);
+      square(x*5+xOffset, y*5+yOffset, 5)
+    }
+  }
+}
+function draw() {
+  background(220);
+  fill("black")
+  text("1", 20,20)
+  text("Rowan", 50,20)
+  
+  text("2", 20, 50)
+  fill("red")
+  rect(50,30,50,15)
+  fill("white")
+  rect(50,45,50,15)
+  fill("blue")
+  rect(50,60,50,15)
+  fill("black")
+  
+  text("3", 20,100)
+  square(50,90,15)
+  square(80,90,15)
+  square(65,105,15)
+  square(50,120,15)
+  square(80,120,15)
+  fill("white")
+  square(65,90,15)
+  square(50,105,15)
+  square(80,105,15)
+  square(65,120,15)
+  fill("black")
+  
+  text("4", 20,160)
+  line(70,160,45,180)
+  line(70,160,95,180)
+  line(45,180,95,180)
+  line(50,180,50,220)
+  line(90,180,90,220)
+  line(50,220,90,220)
+
+  text("5", 120,20)
+  fill("grey")
+  strokeWeight(0)
+  rect(150,20,30,60)
+  rect(157,80,15,30)
+  fill("red")
+  circle(165,33,15)
+  fill("yellow")
+  circle(165,50,15)
+  fill("green")
+  circle(165,68,15)
+
+  fill("black")
+  text("6", 120, 150)
+  fill("white")
+  strokeWeight(4)
+  square(150,150,60,10)
+  fill("black")
+  circle(165,165,10)
+  circle(180,180,10)
+  circle(195,195,10)
+
+  text("7", 250,20)
+  strokeWeight(1)
+
+  Push();
+  Translate(175,175);
+  noStroke();
+
+  let px_size = 10;
+
+  const mario = [
+    [0,1,2,3,2,1,0],
+    [0,1,2,3,2,1,0],
+    [0,1,2,3,2,1,0],
+    [0,1,2,3,2,1,0],
+    [0,1,2,3,2,1,0],
+    [0,1,2,3,2,1,0],
+  ]
+
+  let colors = [
+    color(0,0,0,0),
+    color(255,0,0),
+    color(100,100,100),
+    color(0,255,0)
+  ]
+    pop()
+
+
+}
