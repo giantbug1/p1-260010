@@ -3,27 +3,15 @@ function setup() {
   print("hello world")
 }
 
-/*
-makePixelCanvas(280, 20, 6, 4);
 
-function makePixelCanvas(xOffset, yOffset, width, length) {
-  for(y=0; y<width; y++) {
-    for(x=0; x<length; x++) {
-      strokeWeight(1);
-      fill(255);
-      square(x*5+xOffset, y*5+yOffset, 5)
-    }
-  }
-}
-  */
 function draw() {
   background(220);
- 
+ //naam
   stroke(0)
   fill("black")
   text("1", 20,20)
   text("Rowan", 50,20)
-  
+  //vlag
   text("2", 20, 50)
   fill("red")
   rect(50,30,50,15)
@@ -32,7 +20,7 @@ function draw() {
   fill("blue")
   rect(50,60,50,15)
   fill("black")
-  
+  //schaakbord
   text("3", 20,100)
   square(50,90,15)
   square(80,90,15)
@@ -45,15 +33,12 @@ function draw() {
   square(80,105,15)
   square(65,120,15)
   fill("black")
-  
+  //huis
   text("4", 20,160)
-  line(70,160,45,180)
-  line(70,160,95,180)
-  line(45,180,95,180)
-  line(50,180,50,220)
-  line(90,180,90,220)
-  line(50,220,90,220)
-
+  fill(0,0,0,0)
+  triangle(70,160,45,180,95,180)
+  rect(50,180,40,40)
+  //stoplicht
   text("5", 120,20)
   fill("grey")
   strokeWeight(0)
@@ -65,7 +50,7 @@ function draw() {
   circle(165,50,15)
   fill("green")
   circle(165,68,15)
-
+//dobbelsteen
   fill("black")
   text("6", 120, 150)
   fill("white")
@@ -75,12 +60,11 @@ function draw() {
   circle(150,165,10)
   circle(165,180,10)
   circle(180,195,10)
-
+//mario
   strokeWeight(1)
   text("7", 20,240)
   text("mario", 50,240)
   
-
   push();
   translate(40,250);
   noStroke();
@@ -121,6 +105,7 @@ function draw() {
 
     pop()
   
+  //leafeon
   strokeWeight(1)
   text("8", 210,20)
   text("leafeon", 220,20)
@@ -181,6 +166,8 @@ function draw() {
   pop()
    
 
+
+  //rayqauza
   strokeWeight(1)
   text("9", 210,170)
   text("Rayqauza", 220,170)
