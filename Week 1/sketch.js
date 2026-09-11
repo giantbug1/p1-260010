@@ -167,7 +167,7 @@ function draw() {
    
 
 
-  //rayqauza
+  //rayqauza 
   strokeWeight(1)
   text("9", 210,170)
   text("Rayqauza", 220,170)
