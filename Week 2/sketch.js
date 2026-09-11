@@ -34,6 +34,7 @@ let car5 = 0;
 let cloud1 = 100;
 let cloud2 = 350;
 let cloud3 = 0;
+let leaf1 = 0
 function draw() {
   background(220)
 
@@ -177,32 +178,34 @@ function draw() {
  pop()
 
 
-
   if(light == 1) {
     fill (0,255,0)
     circle(340,255,20)
-    car1 = car1 + (1 * 0,5),
-    car2 = car2 + (1 * 0,6)
+    car1 = car1 + 6
+    car2 = car2 + 5
   
   }
 
   if(light == 2) {
     fill (255,165,0)
     circle(340,233,20)
-    car1 = car1 + (1 * 0,2),
-    car2 = car2 + (1 * 0,2)
+    car1 = car1 + (1 * 1),
+    car2 = car2 + (1 * 1)
   }
   
 
   if(light == 3) {
     fill (255,0,0)
     circle(340,210,20)
+    if(car1 < 220) {
+      car1 = car1 + 1
+    }
+    if(car2 < 220) {
+      car2 = car2 + 1
+    }
     
   }
-
- 
-
-  
+   
  noStroke()
  push()
  translate(car1,-15)
@@ -213,7 +216,7 @@ function draw() {
  fill(50)
  circle(20,345,29)
  circle(80,345,29)
- if (car1 > 450) {
+ if (car1 > 500) {
   car1 = -100
  }
   pop()
@@ -227,7 +230,7 @@ function draw() {
  fill(50)
  circle(20,345,29)
  circle(80,345,29)
- if (car2 > 450) {
+ if (car2 > 600) {
   car2 = -100
   pop()
  } 
