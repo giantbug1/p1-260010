@@ -6,6 +6,7 @@ function setup() {
 
 function draw() {
   background(220);
+  strokeWeight(0)
  //naam
   stroke(0)
   fill("black")
@@ -237,6 +238,7 @@ function draw() {
   color(50,205,50),    // 5 lime green
   color(144,238,144),  // 6 light green
   color(128,128,0),    // 7 olive
+
   color(218,165,32),   // 8 goldenrod
   color(255,255,255),  // 9 white
  ]
