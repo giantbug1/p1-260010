@@ -42,6 +42,10 @@ let leaf3 = 50;
 let leafC = 1;
 let leaf4 = 60;
 let leafD = 1;
+let time = 0;
+let day = 1;
+let night = 2;
+let angle = framecount * 0.01
 
 
 function draw() {
@@ -50,14 +54,11 @@ function draw() {
   fill(0)
   rect(0,0,800,600)
   
-
+  fill(135,206,235)
+rect(0,0,999,600)
   
   stroke(0)
- 
-  
-
-  
-//sun
+ //sun
   push()
  noStroke()
  if (sun1 > 100) {
@@ -75,9 +76,9 @@ function draw() {
  }
  sun2 = sun2 + (1 * a)
  sun = sun + 10
- translate(sun,0)
+ translate(sun,0)/*
  fill(135,206,235)
-  rect(-400,0,1200,600)
+  rect(-500,0,999,600)*/
  fill(255,140,0,90)
  circle(100,100,sun1)
  fill(255,69,0,90)
@@ -85,19 +86,20 @@ function draw() {
  fill(255,255,0)
  circle(100,100,50)
  
- if (sun > 800) {
-  sun = -1200
+ if (sun > 999) {
+  sun = -999
  }
  pop()
  push() 
  //bergen
 translate(0,100)
   fill(70)
-  triangle(210,100, 60, 350, 350, 350)
+  triangle(410,80, 190, 450, 650, 450)
 
-  fill(105)
-  triangle(350,230, 170, 350, 550, 350)
-  triangle(118,180, 40, 350, 200, 350)
+  fi
+  ll(105)
+  triangle(650,230, 370, 450, 950, 450)
+  triangle(270,180, 140, 450, 400, 450)
 
   pop()
 
@@ -395,8 +397,8 @@ translate(200,0)
   if(light == 2) {
     fill (255,165,0)
     circle(340,333,20)
-    car1 = car1 + (1 * 1),
-    car2 = car2 + (1 * 1)
+    car1 = car1 + 6
+    car2 = car2 + 5
   }
   
 
@@ -404,16 +406,16 @@ translate(200,0)
     fill (255,0,0)
     circle(340,310,20)
     if(car1 < 340) {
-      car1 = car1 + 1
+      car1 = car1 + 6
     }
     if(car2 < 340) {
-      car2 = car2 + 1
+      car2 = car2 + 5
     }
     if(car1 > 380) {
-      car1 = car1 + 1
+      car1 = car1 + 12
     }
     if(car2 > 380) {
-      car2 = car2 + 1
+      car2 = car2 + 10
     }
     
   }
