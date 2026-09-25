@@ -4,48 +4,95 @@ let winner;
 let finish;
 let gamestart = 0;
 let playercount = 0;
-let player1 
-let player2 
-let player3 
-let player4 
+let player1;
+let player2;
+let player3;
+let player4;
+
+let botMode = false;
+
 function setup() {
   createCanvas(600, 700);
   background(200);
- player1 = color(0, 100, 255);
- player2 = color(255, 50, 50);
- player3 = color(0, 250, 50);
- player4 = color(255, 105, 180);
+
+player1 = color(0, 100, 255);
+player2 = color(255, 50, 50);
+player3 = color(0, 250, 50);
+player4 = color(255, 105, 180);
+
+colorPicker1 = createColorPicker("#0064FF");
+colorPicker2 = createColorPicker("#FF3232");
+colorPicker3 = createColorPicker("#00FA32");
+colorPicker4 = createColorPicker("#FF69B4");
+
+colorPicker1.position(350, 65);
+colorPicker2.position(350, 215);
+colorPicker3.position(350, 365);
+colorPicker4.position(350, 515);
+
+colorPicker1.hide();
+colorPicker2.hide();
+colorPicker3.hide();
+colorPicker4.hide();
 }
 
 function draw() {
+  if (gamestart == 0) {
 
+  colorPicker1.show();
+  colorPicker2.show();
+  colorPicker3.show();
+  colorPicker4.show();
+
+  player1 = colorPicker1.color();
+  player2 = colorPicker2.color();
+  player3 = colorPicker3.color();
+  player4 = colorPicker4.color();
+
+  background(200);
+  } else {
+
+  colorPicker1.hide();
+  colorPicker2.hide();
+  colorPicker3.hide();
+  colorPicker4.hide();
+  }
   // MENU
   if (gamestart == 0) {
 
     background(200);
 
-    fill(0, 100, 255);
-    rect(200, 100, 120, 70, 10);
+    // 1 PLAYER
+    fill(player1);
+    rect(200, 50, 120, 70, 10);
 
-    fill(255, 50, 50);
-    rect(200, 300, 120, 70, 10);
+    // 2 PLAYERS
+    fill(player2);
+    rect(200, 200, 120, 70, 10);
 
-    fill(0, 250, 50);
+    // 3 PLAYERS
+    fill(player3);
+    rect(200, 350, 120, 70, 10);
+
+    // 4 PLAYERS
+    fill(player4);
     rect(200, 500, 120, 70, 10);
 
     strokeWeight(5);
     stroke(0);
     fill(255);
+    textSize(16);
 
-    text("2 players", 235, 135);
-    text("3 players", 235, 335);
+    text("1 player", 235, 85);
+    text("2 players", 235, 235);
+    text("3 players", 235, 385);
     text("4 players", 235, 535);
   }
 
   // GAME
   else {
 
-    // Background turn colour
+    // Background turn color
     if (player == 1) {
       background(0, 100, 255);
     }
@@ -73,17 +120,27 @@ function draw() {
 
       fill(255);
 
-      if (player == 1) {
-        text("player 1 - Blue", width / 2, 80);
+      if (botMode) {
+        if (player == 1) {
+          text("Player 1 - Blue", width / 2, 80);
+        }
+        else {
+          text("Bot - Red", width / 2, 80);
+        }
       }
-      else if (player == 2) {
-        text("player 2 - Red", width / 2, 80);
-      }
-      else if (player == 3) {
-        text("player 3 - Green", width / 2, 80);
-      }
-      else if (player == 4) {
-        text("player 4 - pink", width / 2, 80);
+      else {
+        if (player == 1) {
+          text("player 1 - Blue", width / 2, 80);
+        }
+        else if (player == 2) {
+          text("player 2 - Red", width / 2, 80);
+        }
+        else if (player == 3) {
+          text("player 3 - Green", width / 2, 80);
+        }
+        else if (player == 4) {
+          text("player 4 - pink", width / 2, 80);
+        }
       }
     }
 
@@ -92,26 +149,35 @@ function draw() {
       text(winner, width / 2, 80);
     }
 
-    tekenBord();
+    drawBoard();
+
+    // BOT TURN
+    if (botMode && player == 2 && !finish) {
+      botMove();
+    }
   }
 }
 
-function tekenBord() {
+function drawBoard() {
 
   let grootte;
- 
-  // board X players
-  if (playercount == 2) {
+
+  // board size
+  if (playercount == 1) {
     grootte = 130;
-    bordGrootte = 3;
+    boardGrootte = 3;
+  }
+  else if (playercount == 2) {
+    grootte = 130;
+    boardGrootte = 3;
   }
   else if (playercount == 3) {
     grootte = 100;
-    bordGrootte = 4;
+    boardGrootte = 4;
   }
   else if (playercount == 4) {
     grootte = 75;
-    bordGrootte = 5;
+    boardGrootte = 5;
   }
 
   let startX = 75;
@@ -123,14 +189,13 @@ function tekenBord() {
   strokeWeight(8);
 
   rect(startX, startY,
-       grootte * bordGrootte,
-       grootte * bordGrootte);
-
+       grootte * boardGrootte,
+       grootte * boardGrootte);
 
   // cells
-  for (let rij = 0; rij < bordGrootte; rij++) {
+  for (let rij = 0; rij < boardGrootte; rij++) {
 
-    for (let kolom = 0; kolom < bordGrootte; kolom++) {
+    for (let kolom = 0; kolom < boardGrootte; kolom++) {
 
       let x = startX + kolom * grootte;
       let y = startY + rij * grootte;
@@ -204,19 +269,30 @@ function mousePressed() {
   // MENU
   if (gamestart == 0) {
 
-    // 2 PLAYERS
+    // 1 PLAYER
     if (mouseX >= 200 && mouseX < 320 &&
-        mouseY >= 100 && mouseY < 170) {
+        mouseY >= 50 && mouseY < 120) {
+
+      playercount = 1;
+      botMode = true;
+      startGame();
+    }
+
+    // 2 PLAYERS
+    else if (mouseX >= 200 && mouseX < 320 &&
+             mouseY >= 200 && mouseY < 270) {
 
       playercount = 2;
+      botMode = false;
       startGame();
     }
 
     // 3 PLAYERS
     else if (mouseX >= 200 && mouseX < 320 &&
-             mouseY >= 300 && mouseY < 370) {
+             mouseY >= 350 && mouseY < 420) {
 
       playercount = 3;
+      botMode = false;
       startGame();
     }
 
@@ -225,6 +301,7 @@ function mousePressed() {
              mouseY >= 500 && mouseY < 570) {
 
       playercount = 4;
+      botMode = false;
       startGame();
     }
   }
@@ -248,14 +325,17 @@ function mousePressed() {
       return;
     }
 
-    // finish
     if (finish) {
+      return;
+    }
+
+    if (botMode && player == 2) {
       return;
     }
 
     let grootte;
 
-    if (playercount == 2) {
+    if (playercount == 1 || playercount == 2) {
       grootte = 130;
     }
     else if (playercount == 3) {
@@ -264,17 +344,23 @@ function mousePressed() {
     else {
       grootte = 75;
     }
+    let boardGrootte;
 
-    let bordGrootte = playercount + 1;
+    if (playercount == 1) {
+      boardGrootte = 3;
+    }
+    else {
+      boardGrootte = playercount + 1;
+    }
+
     let startX = 75;
     let startY = 120;
 
     // mouse position
     if (mouseX >= startX &&
-        mouseX < startX + grootte * bordGrootte &&
+        mouseX < startX + grootte * boardGrootte &&
         mouseY >= startY &&
-        mouseY < startY + grootte * bordGrootte) {
-
+        mouseY < startY + grootte * boardGrootte) {
 
       let kolom = floor((mouseX - startX) / grootte);
       let rij = floor((mouseY - startY) / grootte);
@@ -286,12 +372,19 @@ function mousePressed() {
 
         // Check winner
         if (controleerWinnaar()) {
+
           finish = true;
-          winner = "player " + player + " heeft gewonnen!";
+
+          if (botMode && player == 1) {
+            winner = "Player 1 heeft gewonnen!";
+          }
+          else {
+            winner = "player " + player + " heeft gewonnen!";
+          }
         }
 
         // Check draw
-        else if (bordVol()) {
+        else if (boardVol()) {
 
           finish = true;
           winner = "Gelijkspel!";
@@ -299,10 +392,16 @@ function mousePressed() {
 
         // Next player
         else {
+
           player = player + 1;
 
-          if (player > playercount) {
+          if (player > playercount && !botMode) {
             player = 1;
+          }
+
+         
+          if (botMode) {
+            player = 2;
           }
         }
       }
@@ -311,33 +410,152 @@ function mousePressed() {
 }
 
 function startGame() {
+
   gamestart = 1;
+
   player = 1;
+
   winner = 0;
   finish = false;
 
-  let bordGrootte = playercount + 1;
+  let boardGrootte;
+
+  if (botMode) {
+    boardGrootte = 3;
+  }
+  else {
+    boardGrootte = playercount + 1;
+  }
+
   board = [];
-  for (let rij = 0; rij < bordGrootte; rij++) {
+
+  for (let rij = 0; rij < boardGrootte; rij++) {
 
     board[rij] = [];
 
-    for (let kolom = 0; kolom < bordGrootte; kolom++) {
+    for (let kolom = 0; kolom < boardGrootte; kolom++) {
 
       board[rij][kolom] = "";
     }
   }
 }
 
+function botMove() {
+
+  
+  if (frameCount % 20 != 0) {
+    return;
+  }
+
+  let boardGrootte = 3;
+
+  //Bot win?
+  for (let rij = 0; rij < boardGrootte; rij++) {
+
+    for (let kolom = 0; kolom < boardGrootte; kolom++) {
+
+      if (board[rij][kolom] == "") {
+
+        board[rij][kolom] = 2;
+
+        if (controleerWinnaar()) {
+
+          finish = true;
+          winner = "Bot heeft gewonnen!";
+          return;
+        }
+
+        board[rij][kolom] = "";
+      }
+    }
+  }
+
+  //Can player win next turn?
+  for (let rij = 0; rij < boardGrootte; rij++) {
+
+    for (let kolom = 0; kolom < boardGrootte; kolom++) {
+
+      if (board[rij][kolom] == "") {
+
+        board[rij][kolom] = 1;
+
+        if (controleerWinnaar()) {
+
+          // Block player
+          board[rij][kolom] = 2;
+
+          player = 1;
+
+          return;
+        }
+
+        board[rij][kolom] = "";
+      }
+    }
+  }
+
+  // random
+  let emptySpaces = [];
+
+  for (let rij = 0; rij < boardGrootte; rij++) {
+
+    for (let kolom = 0; kolom < boardGrootte; kolom++) {
+
+      if (board[rij][kolom] == "") {
+
+        emptySpaces.push({
+          rij: rij,
+          kolom: kolom
+        });
+      }
+    }
+  }
+
+  if (emptySpaces.length > 0) {
+
+    let keuze = random(emptySpaces);
+
+    board[keuze.rij][keuze.kolom] = 2;
+
+    // Check winner
+    if (controleerWinnaar()) {
+
+      finish = true;
+      winner = "Bot heeft gewonnen!";
+      return;
+    }
+
+    // Check draw
+    if (boardVol()) {
+
+      finish = true;
+      winner = "Gelijkspel!";
+      return;
+    }
+
+    // Back to player
+    player = 1;
+  }
+}
+
+
 function controleerWinnaar() {
-  let bordGrootte = playercount + 1;
+
+  let boardGrootte;
+
+  if (botMode) {
+    boardGrootte = 3;
+  }
+  else {
+    boardGrootte = playercount + 1;
+  }
 
   // Check rows
-  for (let rij = 0; rij < bordGrootte; rij++) {
+  for (let rij = 0; rij < boardGrootte; rij++) {
 
     let winnaar = true;
 
-    for (let kolom = 0; kolom < bordGrootte; kolom++) {
+    for (let kolom = 0; kolom < boardGrootte; kolom++) {
 
       if (board[rij][kolom] != player) {
         winnaar = false;
@@ -350,11 +568,11 @@ function controleerWinnaar() {
   }
 
   // Check columns
-  for (let kolom = 0; kolom < bordGrootte; kolom++) {
+  for (let kolom = 0; kolom < boardGrootte; kolom++) {
 
     let winnaar = true;
 
-    for (let rij = 0; rij < bordGrootte; rij++) {
+    for (let rij = 0; rij < boardGrootte; rij++) {
 
       if (board[rij][kolom] != player) {
         winnaar = false;
@@ -369,7 +587,7 @@ function controleerWinnaar() {
   // Check diagonal from top-left
   let winnaar = true;
 
-  for (let i = 0; i < bordGrootte; i++) {
+  for (let i = 0; i < boardGrootte; i++) {
 
     if (board[i][i] != player) {
       winnaar = false;
@@ -383,9 +601,9 @@ function controleerWinnaar() {
   // Check diagonal from top-right
   winnaar = true;
 
-  for (let i = 0; i < bordGrootte; i++) {
+  for (let i = 0; i < boardGrootte; i++) {
 
-    if (board[i][bordGrootte - 1 - i] != player) {
+    if (board[i][boardGrootte - 1 - i] != player) {
       winnaar = false;
     }
   }
@@ -397,13 +615,21 @@ function controleerWinnaar() {
   return false;
 }
 
-function bordVol() {
 
-  let bordGrootte = playercount + 1;
+function boardVol() {
 
-  for (let rij = 0; rij < bordGrootte; rij++) {
+  let boardGrootte;
 
-    for (let kolom = 0; kolom < bordGrootte; kolom++) {
+  if (botMode) {
+    boardGrootte = 3;
+  }
+  else {
+    boardGrootte = playercount + 1;
+  }
+
+  for (let rij = 0; rij < boardGrootte; rij++) {
+
+    for (let kolom = 0; kolom < boardGrootte; kolom++) {
 
       if (board[rij][kolom] == "") {
         return false;
