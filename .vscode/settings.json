@@ -1,5 +1,6 @@
 {
     "cSpell.words": [
+        "colum",
         "controleer",
         "gamestart",
         "Gelijkspel",
@@ -9,6 +10,7 @@
         "keuze",
         "kolom",
         "playercount",
-        "Winnaar"
+        "Winnaar",
+        "wintype"
     ]
 }
