@@ -8,6 +8,8 @@ let player1;
 let player2;
 let player3;
 let player4;
+let wintype;
+let winIndex;
 
 let botMode = false;
 
@@ -25,10 +27,10 @@ colorPicker2 = createColorPicker("#FF3232");
 colorPicker3 = createColorPicker("#00FA32");
 colorPicker4 = createColorPicker("#FF69B4");
 
-colorPicker1.position(350, 65);
-colorPicker2.position(350, 215);
-colorPicker3.position(350, 365);
-colorPicker4.position(350, 515);
+colorPicker1.position(230, 315);
+colorPicker2.position(520, 315);
+colorPicker3.position(230, 490);
+colorPicker4.position(520, 490);
 
 colorPicker1.hide();
 colorPicker2.hide();
@@ -61,32 +63,34 @@ function draw() {
   if (gamestart == 0) {
 
     background(200);
-
+    
     // 1 PLAYER
     fill(player1);
-    rect(200, 50, 120, 70, 10);
+    rect(90, 300, 120, 70, 10);
 
     // 2 PLAYERS
     fill(player2);
-    rect(200, 200, 120, 70, 10);
+    rect(370, 300, 120, 70, 10);
 
     // 3 PLAYERS
     fill(player3);
-    rect(200, 350, 120, 70, 10);
+    rect(90, 480, 120, 70, 10);
 
     // 4 PLAYERS
     fill(player4);
-    rect(200, 500, 120, 70, 10);
+    rect(370, 480, 120, 70, 10);
 
     strokeWeight(5);
     stroke(0);
     fill(255);
+    
+   textSize(50);
+    text("tic tac toe", 200,100);
     textSize(16);
-
-    text("1 player", 235, 85);
-    text("2 players", 235, 235);
-    text("3 players", 235, 385);
-    text("4 players", 235, 535);
+    text("1 player", 125, 335);
+    text("2 players", 405, 335);
+    text("3 players", 125, 515);
+    text("4 players", 405, 515);
   }
 
   // GAME
@@ -94,16 +98,16 @@ function draw() {
 
     // Background turn color
     if (player == 1) {
-      background(0, 100, 255);
+      background(player1);
     }
     else if (player == 2) {
-      background(255, 50, 50);
+      background(player2);
     }
     else if (player == 3) {
-      background(0, 250, 50);
+      background(player3);
     }
     else if (player == 4) {
-      background(255, 105, 180);
+      background(player4);
     }
 
     textSize(22);
@@ -122,24 +126,24 @@ function draw() {
 
       if (botMode) {
         if (player == 1) {
-          text("Player 1 - Blue", width / 2, 80);
+          text("Player 1 ", width / 2, 80);
         }
         else {
-          text("Bot - Red", width / 2, 80);
+          text("Bot", width / 2, 80);
         }
       }
       else {
         if (player == 1) {
-          text("player 1 - Blue", width / 2, 80);
+          text("player 1", width / 2, 80);
         }
         else if (player == 2) {
-          text("player 2 - Red", width / 2, 80);
+          text("player 2", width / 2, 80);
         }
         else if (player == 3) {
-          text("player 3 - Green", width / 2, 80);
+          text("player 3", width / 2, 80);
         }
         else if (player == 4) {
-          text("player 4 - pink", width / 2, 80);
+          text("player 4", width / 2, 80);
         }
       }
     }
@@ -204,7 +208,7 @@ function drawBoard() {
       stroke(0);
       strokeWeight(2);
 
-      rect(x, y, grootte, grootte, 10);
+      rect(x, y, grootte, grootte, 15);
 
       // PLAYER 1
       if (board[rij][kolom] == 1) {
@@ -262,6 +266,33 @@ function drawBoard() {
       }
     }
   }
+  if (finish && wintype) {
+
+    stroke(0);
+    strokeWeight(10);
+
+    if (wintype == "row") {
+      let y = startY + winIndex * grootte + grootte / 2;
+
+      line( startX + 15, y, startX + grootte * boardGrootte -15);
+
+
+    } else if (wintype == "colum") {
+       let x = startX + winIndex * grootte + grootte / 2;
+
+      line(x, startY + 15, x, startY + grootte * boardGrootte - 15);
+    } else if (winType == "diag1") {
+
+      line(startX + 15, startY + 15, 
+        startX + grootte * boardGrootte - 15,
+        startY + grootte * boardGrootte - 15);
+    } else if (winType == "diag2") {
+
+      line(startX + grootte * boardGrootte - 15, startY + 15,
+         startX + 15,startY + grootte * boardGrootte - 15);
+    }
+    
+  }
 }
 
 function mousePressed() {
@@ -270,8 +301,8 @@ function mousePressed() {
   if (gamestart == 0) {
 
     // 1 PLAYER
-    if (mouseX >= 200 && mouseX < 320 &&
-        mouseY >= 50 && mouseY < 120) {
+    if (mouseX >= 90 && mouseX < 210 &&
+        mouseY >= 300 && mouseY < 370) {
 
       playercount = 1;
       botMode = true;
@@ -279,8 +310,8 @@ function mousePressed() {
     }
 
     // 2 PLAYERS
-    else if (mouseX >= 200 && mouseX < 320 &&
-             mouseY >= 200 && mouseY < 270) {
+    else if (mouseX >= 370 && mouseX < 490 &&
+             mouseY >= 300 && mouseY < 370) {
 
       playercount = 2;
       botMode = false;
@@ -288,17 +319,17 @@ function mousePressed() {
     }
 
     // 3 PLAYERS
-    else if (mouseX >= 200 && mouseX < 320 &&
-             mouseY >= 350 && mouseY < 420) {
+    else if (mouseX >= 90 && mouseX < 210 &&
+             mouseY >= 480 && mouseY < 550) {
 
       playercount = 3;
       botMode = false;
       startGame();
     }
-
+ 
     // 4 PLAYERS
-    else if (mouseX >= 200 && mouseX < 320 &&
-             mouseY >= 500 && mouseY < 570) {
+    else if (mouseX >= 370 && mouseX < 490 &&
+             mouseY >= 480 && mouseY < 550) {
 
       playercount = 4;
       botMode = false;
@@ -379,6 +410,8 @@ function mousePressed() {
             winner = "Player 1 heeft gewonnen!";
           }
           else {
+
+            
             winner = "player " + player + " heeft gewonnen!";
           }
         }
@@ -417,6 +450,8 @@ function startGame() {
 
   winner = 0;
   finish = false;
+  winType = null;
+winIndex = null;
 
   let boardGrootte;
 
@@ -554,15 +589,17 @@ function controleerWinnaar() {
   for (let rij = 0; rij < boardGrootte; rij++) {
 
     let winnaar = true;
-
+   
     for (let kolom = 0; kolom < boardGrootte; kolom++) {
 
       if (board[rij][kolom] != player) {
         winnaar = false;
       }
     }
-
+     
     if (winnaar) {
+      wintype = "row";
+      winIndex = rij;
       return true;
     }
   }
@@ -580,6 +617,8 @@ function controleerWinnaar() {
     }
 
     if (winnaar) {
+      wintype = "colum";
+      winIndex = kolom;
       return true;
     }
   }
@@ -590,11 +629,13 @@ function controleerWinnaar() {
   for (let i = 0; i < boardGrootte; i++) {
 
     if (board[i][i] != player) {
+      
       winnaar = false;
     }
   }
 
   if (winnaar) {
+    wintype = "diag1"
     return true;
   }
 
@@ -609,6 +650,7 @@ function controleerWinnaar() {
   }
 
   if (winnaar) {
+    wintype = "diag2"
     return true;
   }
 
