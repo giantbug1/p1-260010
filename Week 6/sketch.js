@@ -1,2114 +1,558 @@
-// ============================================================
-// EEVEE TAMAGOTCHI
-// p5.js Virtual Pet
-// ============================================================
+let stats = [
+{name: "happiness", rate: 70}, 
+{name: "energie", rate: 90}, 
+{name: "hunger", rate: 60}, 
+{name: "health", rate: 100}, 
+];
+let backgrounds = [
+  "outside", "bedroom", "bathroom", "kitchen"
+];
 
-// ------------------------------------------------------------
-// BASIS
-// ------------------------------------------------------------
+let degrationRate = 0.05;
+let evo;
+let species = "Eevee";
+let petSprites;
+let level = 1;
+let xp = 0;
 
-let pet = {
-  name: "Eevee",
+let buttonLeft = 0;
+let buttonRight = 0;
 
-  hunger: 70,
-  energy: 70,
-  happiness: 70,
-  health: 100,
+let room;
+let rooms = 2;
 
-  age: 0,
-  evolution: "Eevee",
+let img
+function preload() {
+imgRightButtonOn = loadImage("button on right.png");
+imgRightButtonOff = loadImage("button off right.png");
+imgLeftButtonOff = loadImage("button off left.png");
+imgLeftButtonOn = loadImage("button on left.png");
 
-  color: "normal",
+imgNormal = loadImage("Eevee-normal.png");
+imgSleepy = loadImage("Eevee-sleepy.png");
+imgSad = loadImage("Eevee-sad.png");
+imgHealthy = loadImage("Eevee-healthy.png");
+imgSick = loadImage("Eevee-sick.png");
+imgHungry = loadImage("Eevee-hungry.png");
 
-  sleeping: false,
-  sick: false,
+imgVaporeonSick = loadImage("vaporeon-sick.png");
+}
 
-  lastUpdate: Date.now(),
-  lastEvent: Date.now(),
-  lastHistory: Date.now(),
+function setup () {
+ createCanvas(800, 800);
+  let savedLevel = getItem("level");
+let savedXP = getItem("xp");
 
-  inventory: {
-    berry: 5,
-    potion: 2,
-    stone: 0,
-    food: 2
+if (savedLevel !== null) {
+  level = savedLevel;
+}
+
+if (savedXP !== null) {
+  xp = savedXP;
+}
+ petSprites = {
+  Eevee: {
+    normal: imgNormal,
+    sleepy: imgSleepy,
+    sad: imgSad,
+    healthy: imgHealthy,
+    sick: imgSick,
+    hungry: imgHungry
   },
+  Vaporeon: {
+    normal: "",
+    sleepy: "",
+    sad: "",
+    healthy: "",
+    sick: imgVaporeonSick,
+    hungry: ""
+  }
+};
+  room = "kitchen"
+  let savedStats = getItem("stats");
 
-  crafted: {
-    superFood: 0
-  },
+  if (savedStats !== null) {
+    stats = savedStats;
+  } else {
+    storeItem("stats", stats);
+  }
 
-  furniture: {
-    bed: false,
-    toy: false,
-    plant: false,
-    lamp: false
-  },
+}
 
-  background: 0,
+function draw() {
+  if (rooms >= 3) {
+    room = "bathroom";
+  } else if (rooms == 2) {
+    room = "bedroom";
+  } else if (rooms == 1) {
+    room = "kitchen";
+  } else {
+    room = "outside"
+  }
 
-  history: {
-    hunger: [],
-    energy: [],
-    happiness: [],
-    health: []
+  drawRoom();
+  
+  drawRoomButton(50, 730, 165, 42, "OUTSIDE", "outside");
+  drawRoomButton(230, 730, 165, 42, "BEDROOM", "bedroom");
+  drawRoomButton(410, 730, 165, 42, "BATHROOM", "bathroom");
+  drawRoomButton(590, 730, 165, 42, "KITCHEN", "kitchen");
+
+  drawButton(130, 597, 200, 46, "FEED");
+  drawButton(470, 597, 200, 46, "CLEAN");
+  drawButton(130, 667, 200, 46, "SLEEP");
+  drawButton(470, 667, 200, 46, "PLAY");
+
+  drawButton(600, 27, 170, 100, "inventory");
+
+  drawButtonRight(750,450,50,100);
+  drawButtonLeft(50,450,50,100)
+  
+  
+
+  fill(150);
+  rect(-10,-10,270,138,10);
+  fill(200);
+  rect(-10,-10,260,130,10);
+
+  for (let i = 0; i < stats.length; i++) {
+    let y = 32 + i * 25;
+    let stat = stats[i];
+
+    fill(0);
+    textSize(16);
+    text(stat.name + ":", 10, y)
+  
+  
+  fill(100);
+  rect(120,y,100,5,10);
+    
+  if (stat.rate < 20) {
+  fill(255,20,10);
+  } else if (stat.rate < 50) {
+  fill(255,200,10)
+  } else {
+  fill(100,255,100)
+  }
+
+  rect(120,y, stat.rate, 5, 10);
+
+  if (stat.rate > 0) {
+    stat.rate = max(0, stat.rate - degrationRate)
+  
+  }
+}
+drawPet();
+  storeItem("stats", stats);
+  
+}
+
+function drawRoom() {
+  noStroke();
+
+  if (room == "outside") {
+    // Sky
+    background(120, 205, 255);
+
+    // Clouds
+   
+    fill(255);
+    ellipse(330, 100, 90, 55);
+    ellipse(365, 85, 65, 65);
+    ellipse(400, 103, 75, 50);
+
+    ellipse(630, 160, 80, 50);
+    ellipse(660, 145, 55, 60);
+    ellipse(690, 162, 65, 35);
+
+    // Distant hills
+    fill(100, 190, 115);
+    ellipse(120, 460, 350, 180);
+    ellipse(650, 450, 420, 190);
+
+    // Grass
+    fill(65, 175, 80);
+    rect(0, 430, 800, 370);
+
+    // Flowers
+    for (let x = 40; x < 780; x += 95) {
+      fill(40, 130, 55);
+      rect(x, 460, 4, 25);
+      fill(255, 220, 80);
+      circle(x + 2, 457, 10);
+      fill(255, 120, 170);
+      circle(x - 3, 452, 7);
+      circle(x + 7, 452, 7);
+    }
+
+  } else if (room == "bedroom") {
+    // Warm walls
+    background(250, 220, 175);
+
+    // Wooden floor
+    fill(170, 110, 65);
+    rect(0, 450, 800, 350);
+
+    // Floorboards
+    stroke(125, 75, 45);
+    strokeWeight(2);
+    for (let y = 480; y < 800; y += 55) {
+      line(0, y, 800, y);
+    }
+    for (let x = 100; x < 800; x += 150) {
+      line(x, 450, x, 800);
+    }
+    noStroke();
+
+    // Window
+    fill(120, 80, 50);
+    rect(475, 85, 205, 190, 8);
+    fill(130, 215, 255);
+    rect(488, 98, 179, 164);
+
+    // Window crossbars
+    stroke(255, 245, 220);
+    strokeWeight(8);
+    line(578, 98, 578, 262);
+    line(488, 180, 667, 180);
+    noStroke();
+    // Rug
+    fill(210, 100, 110);
+    ellipse(420, 530, 540, 165);
+
+  } else if (room == "bathroom") {
+    // Pale blue walls
+    background(195, 235, 245);
+
+    // Floor tiles
+    fill(150, 205, 220);
+    rect(0, 450, 800, 350);
+
+    stroke(235, 250, 255);
+    strokeWeight(3);
+    for (let x = 0; x <= 800; x += 80) {
+      line(x, 450, x, 800);
+    }
+    for (let y = 450; y <= 800; y += 65) {
+      line(0, y, 800, y);
+    }
+    noStroke();
+
+    // Wall tiles
+    stroke(255);
+    strokeWeight(2);
+    for (let x = 0; x < 800; x += 100) {
+      line(x, 0, x, 450);
+    }
+    for (let y = 0; y < 450; y += 75) {
+      line(0, y, 800, y);
+    }
+    noStroke();
+
+    // Bathtub
+    fill(110, 165, 180);
+    rect(500, 320, 245, 170, 22);
+    fill(250);
+    rect(512, 330, 221, 75, 20);
+    fill(145, 220, 240);
+    ellipse(622, 360, 180, 55);
+
+    // Sink cabinet
+    fill(145, 105, 85);
+    rect(65, 355, 170, 100, 8);
+    fill(250);
+    ellipse(150, 355, 180, 45);
+    fill(175, 220, 230);
+    ellipse(150, 355, 100, 25);
+
+    // Faucet
+    stroke(130);
+    strokeWeight(7);
+    noFill();
+    arc(150, 340, 35, 35, PI, TWO_PI);
+    line(167, 340, 167, 355);
+    noStroke();
+
+  } else if (room === "kitchen") {
+    // Cream walls
+    background(255, 230, 185);
+
+    // Tiled floor
+    fill(190, 160, 125);
+    rect(0, 450, 800, 350);
+
+    stroke(235, 210, 175);
+    strokeWeight(3);
+    for (let x = 0; x < 800; x += 80) {
+      line(x, 450, x, 800);
+    }
+    for (let y = 450; y < 800; y += 65) {
+      line(0, y, 800, y);
+    }
+    noStroke();
+
+    // Upper cabinets
+    fill(150, 95, 60);
+    rect(300, 90, 245, 150, 8);
+
+    fill(215, 165, 105);
+    rect(310, 100, 110, 130, 5);
+    rect(425, 100, 110, 130, 5);
+
+    // Cabinet handles
+    fill(90, 65, 40);
+    rect(405, 150, 6, 25, 3);
+    rect(510, 150, 6, 25, 3);
+
+    // Counter top
+    fill(100, 90, 80);
+    rect(35, 325, 535, 25, 5);
+    fill(190, 125, 75);
+    rect(45, 350, 515, 115, 5);
+
+    // Oven
+    fill(70, 70, 75);
+    rect(220, 370, 150, 80, 8);
+    fill(145, 195, 210);
+    rect(235, 385, 120, 50, 5);
+    fill(60);
+    circle(250, 375, 10);
+    circle(280, 375, 10);
+    circle(310, 375, 10);
+    circle(340, 375, 10);
+
+    // Fridge
+    fill(220, 230, 235);
+    rect(625, 115, 125, 335, 10);
+    fill(185, 205, 215);
+    rect(635, 125, 105, 150, 5);
+    rect(635, 285, 105, 155, 5);
+    fill(100, 120, 130);
+    rect(720, 170, 6, 45, 3);
+    rect(720, 325, 6, 45, 3);
+  }
+}
+
+
+function drawRoomButton(x, y, w, h, label, roomName) {
+  if (room === roomName) {
+    fill(100, 190, 130); // Current room
+  } else {
+    fill(235, 235, 235);
+  }
+
+  stroke(70, 70, 70);
+  strokeWeight(2);
+  rect(x, y, w, h, 10);
+
+  noStroke();
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(15);
+  text(label, x + w / 2, y + h / 2);
+  textAlign(LEFT, BASELINE);
+}
+
+function drawButtonRight(x,y,w,h) {
+  if (
+    mouseX >= x - 20 && mouseX <= x + 20 &&
+    mouseY >= y - 45 && mouseY <= y + 45
+  ) {
+    image(imgRightButtonOn,x,y,w,h)
+  } else {
+  image(imgRightButtonOff,x,y,w,h);
+}
+}
+
+function drawButtonLeft(x,y,w,h) {
+  if (
+    mouseX >= x - 20 && mouseX <= x + 20 &&
+    mouseY >= y - 45 && mouseY <= y + 45
+  ) {
+    image(imgLeftButtonOn,x,y,w,h)
+  } else {
+  image(imgLeftButtonOff,x,y,w,h);
+}
+}
+
+function drawButton(x, y, w, h, label) {
+  fill(200);
+  stroke(0);
+  strokeWeight(2);
+  rect(x, y, w, h, 10);
+
+  noStroke();
+  fill(0);
+  textSize(18);
+  textAlign(CENTER, CENTER);
+  text(label, x + w / 2, y + h / 2);
+
+  textAlign(LEFT, BASELINE);
+}
+
+function changeStat(name, amount) {
+  let stat = stats.find(i => i.name === name);
+
+  if (stat) {
+    stat.rate = constrain(stat.rate + amount, 0, 100);
+    storeItem("stats", stats);
+  }
+}
+
+function mousePressed() {
+   // Change rooms
+  
+   if (rooms > 0) {
+   if (
+    mouseX >= 20 && mouseX <= 70 &&
+    mouseY >= 400 && mouseY <= 500
+  ) {
+    rooms = rooms - 1
+    console.log(rooms)
+  }
+}
+  if (rooms <= 4) {
+  if (
+    mouseX >= 780 && mouseX <= 710 &&
+    mouseY >= 400 && mouseY <= 500
+  ) {
+    rooms = rooms + 1
+    console.log(rooms)
+  }
+}
+
+  if (mouseY >= 730 && mouseY <= 772) {
+    if (mouseX >= 50 && mouseX <= 215) {
+      room = "outside";
+      return;
+    } else if (mouseX >= 230 && mouseX <= 395) {
+      room = "bedroom";
+      return;
+    } else if (mouseX >= 410 && mouseX <= 575) {
+      room = "bathroom";
+      return;
+    } else if (mouseX >= 590 && mouseX <= 755) {
+      room = "kitchen";
+      return;
+    }
+  }
+   if (
+    mouseX > 600 &&
+    mouseX < 770 &&
+    mouseY > 27 &&
+    mouseY < 127
+  ) {
+ 
+    console.log("inventory")
+  }
+  if (
+    mouseX > 130 &&
+    mouseX < 330 &&
+    mouseY > 597 &&
+    mouseY < 663
+  ) {
+    changeStat("hunger", 20);
+    changeStat("energie", 10);
+    console.log("feed")
+  }
+
+  else if (
+    mouseX > 470 &&
+    mouseX < 670 &&
+    mouseY > 597 &&
+    mouseY < 663
+  ) {
+    changeStat("health", 20);
+    changeStat("happiness", -10);
+    console.log("clean")
+  }
+
+  else if (
+    mouseX > 130 &&
+    mouseX < 330 &&
+    mouseY > 667 &&
+    mouseY < 733
+  ) {
+    changeStat("energie", 20);
+    console.log("sleep")
+  }
+
+   else if (
+    mouseX > 470 &&
+    mouseX < 670 &&
+    mouseY > 667 &&
+    mouseY < 733
+  ) {
+    changeStat("happiness", 40);
+    changeStat("energie", -20);
+    console.log("play")
+  }
+  gainXP(25);
+}
+
+function getCondition() {
+  let happiness = stats.find(s => s.name === "happiness").rate;
+  let energie = stats.find(s => s.name === "energie").rate;
+  let hunger = stats.find(s => s.name === "hunger").rate;
+  let health = stats.find(s => s.name === "health").rate;
+
+  if (
+    (happiness < 10 && energie < 10 && hunger < 10) ||
+    health < 20
+  ) {
+    return "sick";
+
+  } else if (hunger < 20) {
+    return "hungry";
+
+  } else if (energie < 20) {
+    return "sleepy";
+
+  } else if (
+    happiness < 40 ||
+    hunger < 40 ||
+    energie < 40 ||
+    health < 40
+  ) {
+    return "sad";
+
+  } else if (
+    happiness < 80 &&
+    hunger < 80 &&
+    energie < 80 &&
+    health < 80
+  ) {
+    return "normal";
+
+  } else {
+    return "healthy";
   }
 };
 
-// ------------------------------------------------------------
-// SCHERMEN
-// ------------------------------------------------------------
-
-let currentScreen = "main";
-
-let buttons = [];
-
-let nameInput;
-let nameButton;
-
-let mic;
-let micStarted = false;
-
-let audioStarted = false;
-let oscillator;
-
-// ------------------------------------------------------------
-// ACHTERGRONDEN
-// ------------------------------------------------------------
-
-let backgrounds = [
-  "Meadow",
-  "Forest",
-  "Bedroom",
-  "Beach",
-  "Space"
-];
-
-// ------------------------------------------------------------
-// KLEUREN
-// ------------------------------------------------------------
-
-let petColors = [
-  "normal",
-  "dark",
-  "cream",
-  "pink",
-  "blue"
-];
-
-// ------------------------------------------------------------
-// EVOLUTIES
-// ------------------------------------------------------------
-
-let evolutions = [
-  "Vaporeon",
-  "Jolteon",
-  "Flareon",
-  "Espeon",
-  "Umbreon",
-  "Leafeon",
-  "Glaceon",
-  "Sylveon"
-];
-
-// ------------------------------------------------------------
-// SETUP
-// ------------------------------------------------------------
-
-function setup() {
-
-  createCanvas(900, 700);
-
-  textFont("Arial");
-
-  loadGame();
-
-  createNameInput();
-
-  oscillator = new p5.Oscillator("sine");
-  oscillator.amp(0);
-
-  // Microfoon
-  mic = new p5.AudioIn();
-
-  setInterval(gameTick, 1000);
-
-  // Start geschiedenis
-  addHistory();
-
-}
-
-// ------------------------------------------------------------
-// DRAW
-// ------------------------------------------------------------
-
-function draw() {
-
-  drawBackground();
-
-  if (currentScreen === "main") {
-    drawMainScreen();
-  }
-
-  if (currentScreen === "inventory") {
-    drawInventory();
-  }
-
-  if (currentScreen === "craft") {
-    drawCrafting();
-  }
-
-  if (currentScreen === "evolution") {
-    drawEvolution();
-  }
-
-  if (currentScreen === "furniture") {
-    drawFurniture();
-  }
-
-  if (currentScreen === "customize") {
-    drawCustomize();
-  }
-
-  if (currentScreen === "stats") {
-    drawStats();
-  }
-
-  if (currentScreen === "minigame") {
-    drawMinigame();
-  }
-
-  if (currentScreen === "sound") {
-    drawSoundScreen();
-  }
-
-}
-
-// ============================================================
-// TIJD
-// ============================================================
-
-function gameTick() {
-
-  let now = Date.now();
-
-  let seconds = (now - pet.lastUpdate) / 1000;
-
-  // Veiligheidslimiet zodat een gigantische sprong
-  // niet alles meteen naar 0 brengt.
-  seconds = min(seconds, 60 * 60 * 24);
-
-  pet.lastUpdate = now;
-
-  if (pet.sleeping) {
-
-    pet.energy += seconds * 0.035;
-    pet.health += seconds * 0.015;
-
-    pet.hunger += seconds * 0.008;
-
-  } else {
-
-    pet.hunger -= seconds * 0.012;
-    pet.energy -= seconds * 0.008;
-    pet.happiness -= seconds * 0.006;
-
-  }
-
-  // Als honger extreem hoog is
-  if (pet.hunger > 90) {
-    pet.health -= seconds * 0.015;
-  }
-
-  // Lage energie
-  if (pet.energy < 15) {
-    pet.happiness -= seconds * 0.01;
-  }
-
-  // Lage happiness
-  if (pet.happiness < 20) {
-    pet.health -= seconds * 0.008;
-  }
-
-  // Ziekte
-  if (pet.health < 25) {
-    pet.sick = true;
-  }
-
-  if (pet.health > 60) {
-    pet.sick = false;
-  }
-
-  clampStats();
-
-  // Leeftijd
-  pet.age += seconds / 86400;
-
-  // Random event
-  if (now - pet.lastEvent > 120000) {
-
-    randomEvent();
-
-    pet.lastEvent = now;
-  }
-
-  // Geschiedenis
-  if (now - pet.lastHistory > 30000) {
-
-    addHistory();
-
-    pet.lastHistory = now;
-  }
-
-  saveGame();
-}
-
-// ============================================================
-// STATS
-// ============================================================
-
-function clampStats() {
-
-  pet.hunger = constrain(pet.hunger, 0, 100);
-  pet.energy = constrain(pet.energy, 0, 100);
-  pet.happiness = constrain(pet.happiness, 0, 100);
-  pet.health = constrain(pet.health, 0, 100);
-
-}
-
-// ============================================================
-// MAIN SCREEN
-// ============================================================
-
-function drawMainScreen() {
-
-  drawTitle();
-
-  drawPet();
-
-  drawStatsBars();
-
-  drawButtons();
-
-}
-
-// ------------------------------------------------------------
-// TITEL
-// ------------------------------------------------------------
-
-function drawTitle() {
-
-  fill(255);
-  textAlign(CENTER);
-
-  textSize(30);
-
-  text(
-    pet.name + " • " + pet.evolution,
-    width / 2,
-    45
-  );
-
-  textSize(15);
-
-  text(
-    "Leeftijd: " + nf(pet.age, 1, 1) + " dagen",
-    width / 2,
-    70
-  );
-
-}
-
-// ============================================================
-// HUISDIER
-// ============================================================
-
 function drawPet() {
+  let condition = getCondition();
+
+  let sprite = petSprites[species][condition];
+
+  imageMode(CENTER);
 
   push();
-
-  translate(width / 2, 285);
-
-  let scaleSize = 1;
-
-  // Slapen
-  if (pet.sleeping) {
-
-    drawSleepingPet();
-
-  } else {
-
-    drawPokemon(pet.evolution, scaleSize);
-
-  }
-
+  translate(0, 50);
+  image(sprite, width / 2, height / 2, 320, 300);
   pop();
-
 }
 
-// ------------------------------------------------------------
-// EEVEE / EVOLUTIONS TEKENEN
-// ------------------------------------------------------------
+function gainXP(amount) {
+  xp += amount;
 
-function drawPokemon(type, s) {
-
-  push();
-
-  scale(s);
-
-  // Ziek
-  if (pet.sick) {
-
-    drawSickFace();
-
-    pop();
-    return;
-
+  while (xp >= level * 100) {
+    xp -= level * 100;
+    level++;
+    console.log("Level up! Level:", level);
   }
-
-  // Kies kleur
-  let bodyColor;
-
-  if (pet.color === "normal") {
-    bodyColor = color(190, 130, 70);
-  }
-
-  if (pet.color === "dark") {
-    bodyColor = color(75, 65, 65);
-  }
-
-  if (pet.color === "cream") {
-    bodyColor = color(235, 210, 150);
-  }
-
-  if (pet.color === "pink") {
-    bodyColor = color(220, 145, 170);
-  }
-
-  if (pet.color === "blue") {
-    bodyColor = color(100, 170, 220);
-  }
-
-  // Evolutie kleuren
-  if (type === "Vaporeon") {
-    bodyColor = color(80, 150, 220);
-  }
-
-  if (type === "Jolteon") {
-    bodyColor = color(230, 205, 60);
-  }
-
-  if (type === "Flareon") {
-    bodyColor = color(230, 100, 45);
-  }
-
-  if (type === "Espeon") {
-    bodyColor = color(170, 110, 190);
-  }
-
-  if (type === "Umbreon") {
-    bodyColor = color(40, 40, 50);
-  }
-
-  if (type === "Leafeon") {
-    bodyColor = color(120, 170, 80);
-  }
-
-  if (type === "Glaceon") {
-    bodyColor = color(120, 200, 230);
-  }
-
-  if (type === "Sylveon") {
-    bodyColor = color(240, 160, 190);
-  }
-
-  // Shadow
-  fill(0, 0, 0, 40);
-  ellipse(0, 130, 250, 40);
-
-  // Body
-  fill(bodyColor);
-  ellipse(0, 45, 150, 170);
-
-  // Head
-  ellipse(0, -45, 190, 170);
-
-  // Ears
-  triangle(
-    -70, -105,
-    -105, -210,
-    -30, -130
-  );
-
-  triangle(
-    70, -105,
-    105, -210,
-    30, -130
-  );
-
-  // Oren kleuren
-  fill(80, 50, 40);
-
-  triangle(
-    -75, -145,
-    -95, -195,
-    -55, -155
-  );
-
-  triangle(
-    75, -145,
-    95, -195,
-    55, -155
-  );
-
-  // Ogen
-  fill(30);
-
-  ellipse(-35, -50, 22, 30);
-  ellipse(35, -50, 22, 30);
-
-  // Oog highlights
-  fill(255);
-
-  ellipse(-30, -56, 7, 7);
-  ellipse(40, -56, 7, 7);
-
-  // Neus
-  fill(30);
-  triangle(
-    0, -25,
-    -8, -18,
-    8, -18
-  );
-
-  // Mond
-  noFill();
-  stroke(30);
-  strokeWeight(3);
-
-  if (pet.happiness > 60) {
-
-    arc(0, -10, 35, 25, 0, PI);
-
-  } else if (pet.happiness < 30) {
-
-    arc(0, 0, 35, 25, PI, TWO_PI);
-
-  } else {
-
-    line(-10, -10, 10, -10);
-
-  }
-
-  noStroke();
-
-  // Evolutie details
-  drawEvolutionDetails(type);
-
-  // Blij effect
-  if (pet.happiness > 80) {
-
-    fill(255, 230, 80);
-
-    textSize(30);
-
-    text("♥", -110, -80);
-    text("♥", 100, -110);
-
-  }
-
-  pop();
-
 }
 
-// ============================================================
-// EVOLUTIE DETAILS
-// ============================================================
-
-function drawEvolutionDetails(type) {
-
-  // Vaporeon
-  if (type === "Vaporeon") {
-
-    fill(70, 140, 210);
-
-    triangle(
-      -80, 70,
-      -150, 30,
-      -90, 120
-    );
-
-    triangle(
-      80, 70,
-      150, 30,
-      90, 120
-    );
-
-    // Fin
-    triangle(
-      0, -100,
-      -35, -140,
-      35, -140
-    );
-
-  }
-
-  // Jolteon
-  if (type === "Jolteon") {
-
-    fill(245, 220, 60);
-
-    for (let i = -60; i <= 60; i += 30) {
-
-      triangle(
-        i,
-        50,
-        i - 15,
-        100,
-        i + 15,
-        100
-      );
-
-    }
-
-  }
-
-  // Flareon
-  if (type === "Flareon") {
-
-    fill(245, 190, 120);
-
-    ellipse(0, -105, 160, 70);
-
-  }
-
-  // Espeon
-  if (type === "Espeon") {
-
-    fill(220, 60, 80);
-
-    ellipse(0, -110, 25, 25);
-
-  }
-
-  // Umbreon
-  if (type === "Umbreon") {
-
-    fill(240, 200, 60);
-
-    ellipse(-65, -65, 25, 25);
-    ellipse(65, -65, 25, 25);
-    ellipse(-55, 60, 25, 25);
-    ellipse(55, 60, 25, 25);
-
-  }
-
-  // Leafeon
-  if (type === "Leafeon") {
-
-    fill(70, 150, 70);
-
-    triangle(
-      -70, -115,
-      -110, -175,
-      -30, -135
-    );
-
-    triangle(
-      70, -115,
-      110, -175,
-      30, -135
-    );
-
-  }
-
-  // Glaceon
-  if (type === "Glaceon") {
-
-    fill(180, 240, 255);
-
-    triangle(
-      -45, -120,
-      -20, -175,
-      0, -120
-    );
-
-    triangle(
-      45, -120,
-      20, -175,
-      0, -120
-    );
-
-  }
-
-  // Sylveon
-  if (type === "Sylveon") {
-
-    fill(245, 150, 190);
-
-    ellipse(-70, 50, 45, 80);
-    ellipse(70, 50, 45, 80);
-
-    fill(100, 180, 230);
-
-    ellipse(-70, 45, 20, 35);
-    ellipse(70, 45, 20, 35);
-
-  }
-
-}
-
-// ============================================================
-// ZIEKE EEVEE
-// ============================================================
-
-function drawSickFace() {
-
-  fill(150, 110, 80);
-
-  ellipse(0, 30, 150, 170);
-  ellipse(0, -55, 190, 170);
-
-  // oren
-  triangle(-70, -110, -105, -200, -30, -130);
-  triangle(70, -110, 105, -200, 30, -130);
-
-  fill(50);
-
-  // gesloten ogen
-  stroke(50);
-  strokeWeight(4);
-
-  line(-45, -55, -25, -45);
-  line(25, -45, 45, -55);
-
-  noStroke();
-
-  // verdrietige mond
-  noFill();
-  stroke(50);
-  arc(0, -5, 40, 25, PI, TWO_PI);
-
-  noStroke();
-
-  // zweet
-  fill(100, 180, 255);
-
-  ellipse(90, -60, 15, 25);
-
-}
-
-// ============================================================
-// SLAPEN
-// ============================================================
-
-function drawSleepingPet() {
-
-  drawPokemon("Eevee", 1);
-
-  fill(255);
-
-  textSize(35);
-
-  text("Z", 100, -120);
-  text("Z", 130, -160);
-
-  textSize(20);
-
-  text("Z", 155, -195);
-
-}
-
-// ============================================================
-// STATS BARS
-// ============================================================
-
-function drawStatsBars() {
-
-  let x = 40;
-  let y = 110;
-
-  drawBar("Honger", pet.hunger, x, y, 200);
-  drawBar("Energie", pet.energy, x, y + 45, 200);
-  drawBar("Geluk", pet.happiness, x, y + 90, 200);
-  drawBar("Gezondheid", pet.health, x, y + 135, 200);
-
-}
-
-// ------------------------------------------------------------
-
-function drawBar(label, value, x, y, w) {
-
-  fill(255);
-
-  textAlign(LEFT);
-  textSize(15);
-
-  text(label, x, y);
-
-  fill(255, 255, 255, 70);
-
-  rect(x, y + 8, w, 18, 8);
-
-  fill(255);
-
-  rect(
-    x,
-    y + 8,
-    map(value, 0, 100, 0, w),
-    18,
-    8
-  );
-
-  fill(255);
-
-  text(
-    round(value),
-    x + w + 10,
-    y + 23
-  );
-
-}
-
-// ============================================================
-// KNOPPEN
-// ============================================================
-
-function drawButtons() {
-
-  let y = 500;
-
-  button("🍖 Voeren", 40, y, 120, 45, feed);
-  button("🎾 Spelen", 175, y, 120, 45, play);
-  button("🧼 Schoon", 310, y, 120, 45, clean);
-  button("😴 Slapen", 445, y, 120, 45, sleepToggle);
-
-  button("🎒 Inventory", 600, y, 120, 45, () => {
-    currentScreen = "inventory";
-  });
-
-  button("✨ Evolutie", 735, y, 120, 45, () => {
-    currentScreen = "evolution";
-  });
-
-  button("🍳 Craft", 40, 560, 120, 45, () => {
-    currentScreen = "craft";
-  });
-
-  button("🏠 Meubels", 175, 560, 120, 45, () => {
-    currentScreen = "furniture";
-  });
-
-  button("🎨 Custom", 310, 560, 120, 45, () => {
-    currentScreen = "customize";
-  });
-
-  button("📊 Stats", 445, 560, 120, 45, () => {
-    currentScreen = "stats";
-  });
-
-  button("🎮 Minigame", 600, 560, 120, 45, () => {
-    currentScreen = "minigame";
-  });
-
-  button("🔊 Geluid", 735, 560, 120, 45, () => {
-    currentScreen = "sound";
-  });
-
-  button("📸 Foto", 40, 620, 120, 40, takePhoto);
-
-  button("💾 Opslaan", 175, 620, 120, 40, saveGame);
-
-}
-
-// ------------------------------------------------------------
-
-function button(label, x, y, w, h, action) {
-
-  fill(255, 255, 255, 180);
-
-  rect(x, y, w, h, 10);
-
-  fill(30);
-
-  textAlign(CENTER, CENTER);
-
-  textSize(14);
-
-  text(label, x + w / 2, y + h / 2);
-
-  buttons.push({
-    x: x,
-    y: y,
-    w: w,
-    h: h,
-    action: action
-  });
-
-}
-
-// ============================================================
-// ACTIES
-// ============================================================
-
-function feed() {
-
-  if (pet.inventory.berry <= 0) {
-
-    alert("Je hebt geen bessen meer!");
-
-    return;
-  }
-
-  pet.inventory.berry--;
-
-  pet.hunger -= 18;
-  pet.energy += 8;
-  pet.happiness += 3;
-
-  // Te veel voeren
-  if (pet.hunger < 15) {
-
-    pet.health -= 8;
-
-  }
-
-  clampStats();
-
-  saveGame();
-
-}
-
-// ------------------------------------------------------------
-
-function play() {
-
-  if (pet.energy < 15) {
-
-    alert("Eevee is te moe om te spelen!");
-
-    return;
-  }
-
-  pet.happiness += 20;
-  pet.energy -= 15;
-  pet.hunger += 5;
-
-  clampStats();
-
-}
-
-// ------------------------------------------------------------
-
-function clean() {
-
-  pet.health += 15;
-  pet.happiness += 5;
-
-  pet.sick = false;
-
-  clampStats();
-
-}
-
-// ------------------------------------------------------------
-
-function sleepToggle() {
-
-  pet.sleeping = !pet.sleeping;
-
-}
-
-// ============================================================
-// INVENTORY
-// ============================================================
-
-function drawInventory() {
-
-  titleScreen("🎒 Inventory");
-
-  fill(255);
-  textAlign(LEFT);
-  textSize(20);
-
-  text("🍓 Bessen: " + pet.inventory.berry, 100, 160);
-  text("🧪 Potions: " + pet.inventory.potion, 100, 210);
-  text("💎 Evolution stones: " + pet.inventory.stone, 100, 260);
-  text("🍳 Super Food: " + pet.crafted.superFood, 100, 310);
-
-  button("Terug", 50, 600, 130, 45, () => {
-    currentScreen = "main";
-  });
-
-}
-
-// ============================================================
-// CRAFTING
-// ============================================================
-
-function drawCrafting() {
-
-  titleScreen("🍳 Voedsel Craften");
-
-  fill(255);
-
-  textAlign(CENTER);
-
-  textSize(20);
-
-  text(
-    "Maak Super Food met 2 bessen.",
-    width / 2,
-    160
-  );
-
-  text(
-    "Super Food: " + pet.crafted.superFood,
-    width / 2,
-    220
-  );
-
-  button(
-    "Craft",
-    350,
-    300,
-    200,
-    60,
-    craftFood
-  );
-
-  button(
-    "Terug",
-    50,
-    600,
-    130,
-    45,
-    () => currentScreen = "main"
-  );
-
-}
-
-// ------------------------------------------------------------
-
-function craftFood() {
-
-  if (pet.inventory.berry >= 2) {
-
-    pet.inventory.berry -= 2;
-
-    pet.crafted.superFood++;
-
-  } else {
-
-    alert("Je hebt 2 bessen nodig!");
-
-  }
-
-}
-
-// ============================================================
-// EVOLUTIE
-// ============================================================
-
-function drawEvolution() {
-
-  titleScreen("✨ Eevee Evolutie");
-
-  fill(255);
-
-  textAlign(CENTER);
-
-  textSize(18);
-
-  text(
-    "Je huidige vorm: " + pet.evolution,
-    width / 2,
-    120
-  );
-
-  textSize(14);
-
-  text(
-    "Evolutie wordt bepaald door je zorgstijl.",
-    width / 2,
-    150
-  );
-
-  let x = 70;
-  let y = 200;
-
-  for (let i = 0; i < evolutions.length; i++) {
-
-    button(
-      evolutions[i],
-      x,
-      y,
-      160,
-      45,
-      () => evolve(evolutions[i])
-    );
-
-    x += 180;
-
-    if (x > 700) {
-
-      x = 70;
-      y += 60;
-
-    }
-
-  }
-
-  button(
-    "Terug",
-    50,
-    600,
-    130,
-    45,
-    () => currentScreen = "main"
-  );
-
-}
-
-// ------------------------------------------------------------
-
-function evolve(type) {
-
-  // Evolution requirements
-
-  if (pet.age < 1) {
-
-    alert("Eevee moet minstens 1 dag oud zijn!");
-
-    return;
-
-  }
-
-  if (pet.happiness < 60) {
-
-    alert("Eevee is nog niet gelukkig genoeg!");
-
-    return;
-
-  }
-
-  pet.evolution = type;
-
-  pet.inventory.stone = max(
-    0,
-    pet.inventory.stone - 1
-  );
-
-  saveGame();
-
-}
-
-// ============================================================
-// MEUBELS
-// ============================================================
-
-function drawFurniture() {
-
-  titleScreen("🏠 Kamer");
-
-  fill(255);
-
-  textAlign(LEFT);
-
-  textSize(18);
-
-  text(
-    "Meubels veranderen de statistieken van je huisdier.",
-    80,
-    130
-  );
-
-  button(
-    "🛏️ Bed",
-    100,
-    200,
-    150,
-    60,
-    buyBed
-  );
-
-  button(
-    "🧸 Speelgoed",
-    300,
-    200,
-    150,
-    60,
-    buyToy
-  );
-
-  button(
-    "🌱 Plant",
-    500,
-    200,
-    150,
-    60,
-    buyPlant
-  );
-
-  button(
-    "💡 Lamp",
-    700,
-    200,
-    120,
-    60,
-    buyLamp
-  );
-
-  button(
-    "Terug",
-    50,
-    600,
-    130,
-    45,
-    () => currentScreen = "main"
-  );
-
-}
-
-// ------------------------------------------------------------
-
-function buyBed() {
-
-  pet.furniture.bed = true;
-
-}
-
-function buyToy() {
-
-  pet.furniture.toy = true;
-
-}
-
-function buyPlant() {
-
-  pet.furniture.plant = true;
-
-}
-
-function buyLamp() {
-
-  pet.furniture.lamp = true;
-
-}
-
-// ============================================================
-// CUSTOMIZE
-// ============================================================
-
-function drawCustomize() {
-
-  titleScreen("🎨 Eevee Customizen");
-
-  fill(255);
-
-  textAlign(CENTER);
-
-  textSize(20);
-
-  text("Kies een kleur:", width / 2, 130);
-
-  let x = 100;
-
-  for (let c of petColors) {
-
-    button(
-      c,
-      x,
-      200,
-      130,
-      50,
-      () => {
-        pet.color = c;
-      }
-    );
-
-    x += 150;
-
-  }
-
-  text(
-    "Achtergrond",
-    width / 2,
-    320
-  );
-
-  x = 100;
-
-  for (let i = 0; i < backgrounds.length; i++) {
-
-    button(
-      backgrounds[i],
-      x,
-      370,
-      130,
-      50,
-      () => {
-        pet.background = i;
-      }
-    );
-
-    x += 150;
-
-  }
-
-  button(
-    "Naam veranderen",
-    350,
-    470,
-    200,
-    50,
-    showNameInput
-  );
-
-  button(
-    "Terug",
-    50,
-    600,
-    130,
-    45,
-    () => currentScreen = "main"
-  );
-
-}
-
-// ============================================================
-// NAAM
-// ============================================================
-
-function createNameInput() {
-
-  nameInput = createInput(pet.name);
-
-  nameInput.position(
-    width / 2 - 100,
-    height / 2 - 30
-  );
-
-  nameInput.size(200);
-
-  nameInput.hide();
-
-  nameButton = createButton("Naam opslaan");
-
-  nameButton.position(
-    width / 2 - 70,
-    height / 2 + 10
-  );
-
-  nameButton.mousePressed(changeName);
-
-  nameButton.hide();
-
-}
-
-// ------------------------------------------------------------
-
-function showNameInput() {
-
-  nameInput.show();
-  nameButton.show();
-
-}
-
-// ------------------------------------------------------------
-
-function changeName() {
-
-  let newName = nameInput.value();
-
-  if (newName.length > 0) {
-
-    pet.name = newName;
-
-  }
-
-  nameInput.hide();
-  nameButton.hide();
-
-  saveGame();
-
-}
-
-// ============================================================
-// STATISTIEKEN GRAFIEK
-// ============================================================
-
-function drawStats() {
-
-  titleScreen("📊 Statistieken");
-
-  let x = 100;
-  let y = 200;
-  let w = 700;
-  let h = 300;
-
-  stroke(255, 100);
-
-  line(x, y, x, y + h);
-  line(x, y + h, x + w, y + h);
-
-  // horizontale lijnen
-
-  for (let i = 0; i <= 10; i++) {
-
-    let yy = y + h - i * 30;
-
-    line(x, yy, x + w, yy);
-
-  }
-
-  drawGraph(
-    pet.history.hunger,
-    x,
-    y,
-    w,
-    h
-  );
-
-  drawGraph(
-    pet.history.energy,
-    x,
-    y,
-    w,
-    h
-  );
-
-  drawGraph(
-    pet.history.happiness,
-    x,
-    y,
-    w,
-    h
-  );
-
-  drawGraph(
-    pet.history.health,
-    x,
-    y,
-    w,
-    h
-  );
-
-  noStroke();
-
-  fill(255);
-
-  text(
-    "Honger / Energie / Geluk / Gezondheid",
-    width / 2,
-    550
-  );
-
-  button(
-    "Terug",
-    50,
-    600,
-    130,
-    45,
-    () => currentScreen = "main"
-  );
-
-}
-
-// ------------------------------------------------------------
-
-function drawGraph(data, x, y, w, h) {
-
-  noFill();
-
-  beginShape();
-
-  for (let i = 0; i < data.length; i++) {
-
-    let px = map(
-      i,
-      0,
-      max(data.length - 1, 1),
-      x,
-      x + w
-    );
-
-    let py = map(
-      data[i],
-      0,
-      100,
-      y + h,
-      y
-    );
-
-    vertex(px, py);
-
-  }
-
-  endShape();
-
-}
-
-// ============================================================
-// MINIGAME
-// ============================================================
-
-let gameTargetX = 450;
-let gameTargetY = 350;
-let gameScore = 0;
-
-function drawMinigame() {
-
-  titleScreen("🎮 Berry Catch");
-
-  fill(255);
-
-  textAlign(CENTER);
-
-  textSize(20);
-
-  text(
-    "Klik op de bes!",
-    width / 2,
-    100
-  );
-
-  fill(255, 80, 80);
-
-  ellipse(
-    gameTargetX,
-    gameTargetY,
-    60,
-    60
-  );
-
-  fill(255);
-
-  text(
-    "Score: " + gameScore,
-    width / 2,
-    500
-  );
-
-  button(
-    "Terug",
-    50,
-    600,
-    130,
-    45,
-    () => currentScreen = "main"
-  );
-
-}
-
-// ------------------------------------------------------------
-
-function mousePressed() {
-
-  // Minigame
-  if (currentScreen === "minigame") {
-
-    let d = dist(
-      mouseX,
-      mouseY,
-      gameTargetX,
-      gameTargetY
-    );
-
-    if (d < 40) {
-
-      gameScore++;
-
-      pet.happiness += 5;
-
-      gameTargetX = random(100, 800);
-      gameTargetY = random(180, 450);
-
-      clampStats();
-
-    }
-
-  }
-
-  // Buttons
-  for (let b of buttons) {
-
-    if (
-      mouseX > b.x &&
-      mouseX < b.x + b.w &&
-      mouseY > b.y &&
-      mouseY < b.y + b.h
-    ) {
-
-      b.action();
-
-    }
-
-  }
-
-  buttons = [];
-
-}
-
-// ============================================================
-// GELUID
-// ============================================================
-
-function drawSoundScreen() {
-
-  titleScreen("🔊 Geluid");
-
-  fill(255);
-
-  textAlign(CENTER);
-
-  textSize(18);
-
-  text(
-    "Laat Eevee reageren op geluid.",
-    width / 2,
-    150
-  );
-
-  button(
-    "🎤 Microfoon starten",
-    300,
-    250,
-    300,
-    60,
-    startMic
-  );
-
-  button(
-    "🔔 Geluid maken",
-    300,
-    340,
-    300,
-    60,
-    playSound
-  );
-
-  button(
-    "Terug",
-    50,
-    600,
-    130,
-    45,
-    () => currentScreen = "main"
-  );
-
-}
-
-// ------------------------------------------------------------
-
-function startMic() {
-
-  userStartAudio();
-
-  mic.start();
-
-  micStarted = true;
-
-}
-
-// ------------------------------------------------------------
-
-function playSound() {
-
-  userStartAudio();
-
-  oscillator.freq(
-    map(
-      pet.happiness,
-      0,
-      100,
-      150,
-      600
-    )
-  );
-
-  oscillator.amp(0.2, 0.05);
-
-  setTimeout(() => {
-
-    oscillator.amp(0, 0.3);
-
-  }, 300);
-
-  pet.happiness += 5;
-
-  clampStats();
-
-}
-
-// ============================================================
-// MICROFOON
-// ============================================================
-
-function updateMicrophone() {
-
-  if (!micStarted) return;
-
-  let volume = mic.getLevel();
-
-  if (volume > 0.2) {
-
-    pet.happiness += 0.1;
-
-  }
-
-}
-
-// ============================================================
-// RANDOM EVENTS
-// ============================================================
-
-function randomEvent() {
-
-  let event = floor(random(5));
-
-  if (event === 0) {
-
-    pet.happiness += 10;
-
-    alert(
-      pet.name +
-      " wil extra aandacht! ❤️"
-    );
-
-  }
-
-  if (event === 1) {
-
-    pet.sick = true;
-
-    pet.health -= 10;
-
-    alert(
-      pet.name +
-      " is ziek geworden!"
-    );
-
-  }
-
-  if (event === 2) {
-
-    pet.inventory.berry += 2;
-
-    alert(
-      pet.name +
-      " vond twee bessen!"
-    );
-
-  }
-
-  if (event === 3) {
-
-    pet.energy += 10;
-
-    alert(
-      pet.name +
-      " heeft een lekker dutje gedaan."
-    );
-
-  }
-
-  if (event === 4) {
-
-    pet.happiness += 15;
-
-    alert(
-      pet.name +
-      " kreeg onverwacht extra aandacht!"
-    );
-
-  }
-
-  clampStats();
-
-}
-
-// ============================================================
-// GESCHIEDENIS
-// ============================================================
-
-function addHistory() {
-
-  pet.history.hunger.push(pet.hunger);
-  pet.history.energy.push(pet.energy);
-  pet.history.happiness.push(pet.happiness);
-  pet.history.health.push(pet.health);
-
-  // Maximaal 30 punten bewaren
-
-  for (let key in pet.history) {
-
-    if (pet.history[key].length > 30) {
-
-      pet.history[key].shift();
-
-    }
-
-  }
-
-}
-
-// ============================================================
-// ACHTERGROND
-// ============================================================
-
-function drawBackground() {
-
-  let t = hour();
-
-  // Dag/nacht
-
-  let night =
-    t >= 20 ||
-    t <= 6;
-
-  if (night) {
-
-    background(20, 25, 60);
-
-  } else {
-
-    background(120, 190, 240);
-
-  }
-
-  if (pet.background === 0) {
-
-    // Meadow
-
-    fill(100, 190, 100);
-
-    rect(
-      0,
-      height * 0.55,
-      width,
-      height
-    );
-
-  }
-
-  if (pet.background === 1) {
-
-    // Forest
-
-    fill(60, 130, 70);
-
-    rect(
-      0,
-      height * 0.55,
-      width,
-      height
-    );
-
-    for (let x = 0; x < width; x += 100) {
-
-      fill(70, 90, 50);
-
-      rect(
-        x,
-        200,
-        30,
-        350
-      );
-
-      fill(40, 120, 50);
-
-      ellipse(
-        x + 15,
-        180,
-        120,
-        130
-      );
-
-    }
-
-  }
-
-  if (pet.background === 2) {
-
-    // Bedroom
-
-    fill(180, 140, 120);
-
-    rect(
-      0,
-      height * 0.55,
-      width,
-      height
-    );
-
-    fill(230, 220, 200);
-
-    rect(
-      0,
-      height * 0.55,
-      width,
-      20
-    );
-
-  }
-
-  if (pet.background === 3) {
-
-    // Beach
-
-    fill(230, 210, 130);
-
-    rect(
-      0,
-      height * 0.55,
-      width,
-      height
-    );
-
-    fill(70, 180, 220);
-
-    rect(
-      0,
-      height * 0.65,
-      width,
-      50
-    );
-
-  }
-
-  if (pet.background === 4) {
-
-    // Space
-
-    background(10, 10, 30);
-
-    fill(255);
-
-    for (let i = 0; i < 80; i++) {
-
-      ellipse(
-        random(width),
-        random(height),
-        2,
-        2
-      );
-
-    }
-
-  }
-
-}
-
-// ============================================================
-// SCREEN TITEL
-// ============================================================
-
-function titleScreen(title) {
-
-  buttons = [];
-
-  fill(255);
-
-  textAlign(CENTER);
-
-  textSize(30);
-
-  text(title, width / 2, 60);
-
-}
-
-// ============================================================
-// FOTO
-// ============================================================
-
-function takePhoto() {
-
-  saveCanvas(
-    pet.name + "_memory",
-    "png"
-  );
-
-}
-
-// ============================================================
-// OPSLAAN
-// ============================================================
-
-function saveGame() {
-
-  localStorage.setItem(
-    "eeveeTamagotchi",
-    JSON.stringify(pet)
-  );
-
-}
-
-// ============================================================
-// LADEN
-// ============================================================
-
-function loadGame() {
-
-  let saved =
-    localStorage.getItem(
-      "eeveeTamagotchi"
-    );
-
-  if (saved) {
-
-    let loaded =
-      JSON.parse(saved);
-
-    pet = loaded;
-
-    // Voor eventuele nieuwe versies
-    // ontbrekende waarden aanvullen
-
-    if (!pet.inventory)
-      pet.inventory = {};
-
-    if (!pet.history)
-      pet.history = {};
-
-    pet.inventory.berry =
-      pet.inventory.berry ?? 5;
-
-    pet.inventory.potion =
-      pet.inventory.potion ?? 2;
-
-    pet.inventory.stone =
-      pet.inventory.stone ?? 0;
-
-    pet.crafted =
-      pet.crafted ?? { superFood: 0 };
-
-    pet.furniture =
-      pet.furniture ??
-      {
-        bed: false,
-        toy: false,
-        plant: false,
-        lamp: false
-      };
-
-    pet.history.hunger =
-      pet.history.hunger ?? [];
-
-    pet.history.energy =
-      pet.history.energy ?? [];
-
-    pet.history.happiness =
-      pet.history.happiness ?? [];
-
-    pet.history.health =
-      pet.history.health ?? [];
-
-    // Belangrijk:
-    // zet lastUpdate op het moment waarop
-    // de game opnieuw wordt geopend.
-    //
-    // De verstreken tijd wordt hieronder verwerkt.
-
-    let now = Date.now();
-
-    let offlineSeconds =
-      (now - pet.lastUpdate) / 1000;
-
-    offlineSeconds =
-      min(
-        offlineSeconds,
-        60 * 60 * 24 * 7
-      );
-
-    if (pet.sleeping) {
-
-      pet.energy += offlineSeconds * 0.035;
-      pet.health += offlineSeconds * 0.015;
-
-    } else {
-
-      pet.hunger -= offlineSeconds * 0.012;
-      pet.energy -= offlineSeconds * 0.008;
-      pet.happiness -= offlineSeconds * 0.006;
-
-    }
-
-    pet.lastUpdate = now;
-
-    clampStats();
-
-  }
-
-}
-
-// ============================================================
-// MUIS / MICROFOON UPDATE
-// ============================================================
-
-function keyPressed() {
-
-  // S = slapen
-  if (key === "s") {
-
-    sleepToggle();
-
-  }
-
-  // F = voeren
-  if (key === "f") {
-
-    feed();
-
-  }
-
-  // P = spelen
-  if (key === "p") {
-
-    play();
-
-  }
-
-  // C = schoonmaken
-  if (key === "c") {
-
-    clean();
-
-  }
-
-}
-
-// ============================================================
-// EVOLUTIE AUTOMATISCH VOORSTEL
-// ============================================================
-
-function evolutionSuggestion() {
-
-  if (pet.evolution !== "Eevee") {
-    return;
-  }
-
-  // Veel geluk + overdag
-  if (
-    pet.happiness > 90 &&
-    hour() >= 7 &&
-    hour() <= 18
-  ) {
-
-    return "Espeon";
-
-  }
-
-  // Veel geluk + nacht
-  if (
-    pet.happiness > 90 &&
-    (hour() >= 19 || hour() <= 6)
-  ) {
-
-    return "Umbreon";
-
-  }
-
-  return null;
-
+function save() {
+  storeItem("stats", stats);
+  storeItem("level", level);
+  storeItem("xp", xp);
 }
