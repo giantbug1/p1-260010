@@ -1,3 +1,6 @@
+let petName = "Eevee";
+let nameInput;
+let namingScreen = false;
 let stats = [
 {name: "happiness", rate: 70}, 
 {name: "energie", rate: 90}, 
@@ -9,12 +12,19 @@ let backgrounds = [
 ];
 let currentAction;
 
-let degrationRate = 0.05;
+let degrationRate = 0.01;
 let evo;
 let species = "Eevee";
 let petSprites;
 let level = 1;
 let xp = 0;
+
+//settings
+let settingsNameMode = false;
+let resetConfirm = false;
+let settingsNameInput;
+let saveNameButton;
+let cancelNameButton;
 
 let buttonLeft = 0;
 let buttonRight = 0;
@@ -22,13 +32,25 @@ let buttonRight = 0;
 let room;
 let rooms = 2;
 
+// Garden system
+let gardenPlanted = false;
+let gardenReadyAt = 0;
+let gardenGrowTime = 30 * 1000; 
+let gardenSeedMenu = false;
 
 let img
 function preload() {
-  //items
+//items
 imgWaterStone = loadImage("waterstone.png");
 imgThunderStone = loadImage("thunderstone.png");
-  //buttons
+imgFireStone = loadImage("fire stone.png");
+imgSunStone = loadImage("sun stone.png");
+imgMoonStone = loadImage("moon stone.png");
+imgLeafStone = loadImage("leaf stone.png");
+imgIceStone = loadImage("ice stone.png");
+imgShinyStone = loadImage("shiny stone.png");
+imgEverstone = loadImage("ever stone.png");
+//buttons
 imgRightButtonOn = loadImage("button on right.png");
 imgRightButtonOff = loadImage("button off right.png");
 imgLeftButtonOff = loadImage("button off left.png");
@@ -39,6 +61,8 @@ imgInventoryOn = loadImage("inventory on.png");
 imgInventoryOff = loadImage("inventory off.png");
 imgShopOn = loadImage("shop on.png");
 imgShopOff = loadImage("shop off.png");
+imgSettingsOn = loadImage("settings on.png");
+imgSettingsOff = loadImage("settings off.png");
 //eevee
 imgNormal = loadImage("Eevee-normal.png");
 imgSleepy = loadImage("Eevee-sleepy.png");
@@ -62,13 +86,14 @@ imgJolteonSick = loadImage("jolteon sick.png");
 imgJolteonNormal = loadImage("jolteon normal.png");
 }
 
+let settingsOpen = false;
 let inventoryOpen = false;
 let shopOpen = false;
 let shopScroll = 0;
 let shopScrollSpeed = 40;
 
 let inventory = [];
-let inventorySlots = 5;
+let inventorySlots = 10;
 
 let coins = 200;
 let selectedItem = -1;
@@ -140,20 +165,27 @@ let shopItems = [
     evolves: "Sylveon"
   },
   {
+  name: "Ever Stone",
+  id: "everstone",
+  price: 150,
+  sellPrice: 75,
+  type: "devolution"
+  },
+  {
+  name: "Berry Seed",
+  id: "berryseed",
+  price: 25,
+  sellPrice: 10,
+  type: "seed"
+  },
+  {
     name: "Berry",
     id: "berry",
     price: 10,
     sellPrice: 5,
     type: "food",
     hunger: 10
-  },
-  {
-  name: "Devolution Stone",
-  id: "devolutionstone",
-  price: 150,
-  sellPrice: 75,
-  type: "devolution"
-}
+  }
 ];
 
 
@@ -169,6 +201,19 @@ if (savedLevel !== null) {
 if (savedXP !== null) {
   xp = savedXP;
 }
+
+// Load saved garden
+let savedGardenPlanted = getItem("gardenPlanted");
+let savedGardenReadyAt = getItem("gardenReadyAt");
+
+if (savedGardenPlanted !== null) {
+  gardenPlanted = savedGardenPlanted;
+}
+
+if (savedGardenReadyAt !== null) {
+  gardenReadyAt = savedGardenReadyAt;
+}
+
  petSprites = {
   Eevee: {
     normal: imgNormal,
@@ -203,43 +248,43 @@ if (savedXP !== null) {
     hungry: ""
   },
   Espeon: {
-    normal: imgVaporeonNormal,
+    normal: "",
     sleepy: "",
     sad: "",
     healthy: "",
-    sick: imgVaporeonSick,
+    sick: "",
     hungry: ""
   },
   Umbreon: {
-    normal: imgVaporeonNormal,
+    normal: "",
     sleepy: "",
     sad: "",
     healthy: "",
-    sick: imgVaporeonSick,
+    sick: "",
     hungry: ""
   },
   Leafeon: {
-    normal: imgVaporeonNormal,
+    normal: "",
     sleepy: "",
     sad: "",
     healthy: "",
-    sick: imgVaporeonSick,
+    sick: "",
     hungry: ""
   },
   Glaceon: {
-    normal: imgVaporeonNormal,
+    normal: "",
     sleepy: "",
     sad: "",
     healthy: "",
-    sick: imgVaporeonSick,
+    sick: "",
     hungry: ""
   },
   Sylveon: {
-    normal: imgVaporeonNormal,
+    normal: "",
     sleepy: "",
     sad: "",
     healthy: "",
-    sick: imgVaporeonSick,
+    sick: "",
     hungry: ""
   },
   
@@ -248,12 +293,13 @@ if (savedXP !== null) {
  items = {
   waterstone: imgWaterStone,
   thunderstone: imgThunderStone,
-  /*firestone: imgFireStone,
+  everstone: imgEverstone,
+  firestone: imgFireStone,
   sunstone: imgSunStone,
   moonstone: imgMoonStone,
   leafstone: imgLeafStone,
   icestone: imgIceStone,
-  shinystone: imgShinyStone*/
+  shinystone: imgShinyStone
  };
   room = "kitchen"
   let savedStats = getItem("stats");
@@ -280,9 +326,74 @@ if (savedSpecies !== null) {
   species = savedSpecies;
 }
 
+let savedName = getItem("petName");
+
+if (savedName !== null) {
+  petName = savedName;
+}
+
+
+
+nameInput = createInput("Eevee");
+nameInput.position(300, 300);
+nameInput.size(200);
+
+let nameButton = createButton("Confirm");
+nameButton.position(350, 350);
+
+nameInput.hide();
+nameButton.hide();
+
+nameButton.mousePressed(() => {
+  if (nameInput.value().trim() !== "") {
+    petName = nameInput.value().trim();
+    namingScreen = false;
+
+    nameInput.hide();
+    nameButton.hide();
+
+    storeItem("petName", petName);
+  }
+});
+// Settings name controls
+settingsNameInput = createInput(petName);
+settingsNameInput.position(300, 320);
+settingsNameInput.size(200);
+settingsNameInput.hide();
+
+saveNameButton = createButton("Save Name");
+saveNameButton.position(330, 360);
+saveNameButton.hide();
+
+cancelNameButton = createButton("Cancel");
+cancelNameButton.position(430, 360);
+cancelNameButton.hide();
+
+// Save the new name
+saveNameButton.mousePressed(() => {
+  let newName = settingsNameInput.value().trim();
+
+  if (newName !== "") {
+    petName = newName;
+    storeItem("petName", petName);
+    itemMessage = "Name changed!";
+    closeNameEditor();
+  } else {
+    itemMessage = "Please enter a name!";
+  }
+});
+
+// Cancel renaming
+cancelNameButton.mousePressed(() => {
+  closeNameEditor();
+});
 }
 
 function draw() {
+  if (namingScreen) {
+  drawNamingScreen();
+  return;
+}
   if (rooms >= 3) {
     room = "bathroom";
   } else if (rooms == 2) {
@@ -300,7 +411,7 @@ function draw() {
   } else if (rooms == 1) {
     currentAction = "Feed";
   } else {
-    currentAction = "Play"
+    currentAction = "Play";
   }
 
   drawRoom();
@@ -309,8 +420,10 @@ function draw() {
   drawButtonLeft(50,450,50,100);
   drawActionButton(400, 670, 270, 100);
   
-  drawShop(520,70,130,130);
-  drawInventory(710,70,130,130);
+  drawShop(590,70,130,130);
+  drawInventory(440,70,130,130);
+
+  drawSettings(730,60,130,130);
 
   fill(150);
   rect(-10,-10,270,138,10);
@@ -346,13 +459,25 @@ function draw() {
 }
 drawPet();
   storeItem("stats", stats);
+  textSize(35);
+  noStroke();
+  fill(0);
+  text(petName, width/2, 270);
 
-  if (inventoryOpen) {
+if (inventoryOpen) {
   drawInventoryMenu();
 }
 
 if (shopOpen) {
   drawShopMenu();
+}
+
+if (settingsOpen) {
+  drawSettingsMenu();
+}
+
+if (gardenSeedMenu) {
+  drawGardenSeedMenu();
 }
   
 }
@@ -365,7 +490,6 @@ function drawRoom() {
     background(120, 205, 255);
 
     // Clouds
-   
     fill(255);
     ellipse(330, 100, 90, 55);
     ellipse(365, 85, 65, 65);
@@ -394,7 +518,8 @@ function drawRoom() {
       circle(x - 3, 452, 7);
       circle(x + 7, 452, 7);
     }
-
+    // Draw the garden outside
+    drawGarden();  
   } else if (room == "bedroom") {
     // Warm walls
     background(250, 220, 175);
@@ -414,6 +539,7 @@ function drawRoom() {
     }
     noStroke();
 
+
     // Window
     fill(120, 80, 50);
     rect(475, 85, 205, 190, 8);
@@ -428,7 +554,17 @@ function drawRoom() {
     noStroke();
     // Rug
     fill(210, 100, 110);
-    ellipse(420, 530, 540, 165);
+    ellipse(420, 590, 540, 165);
+
+    //bed
+    fill(190, 135, 85);
+    rect(100, 300, 300, 200, 10);
+    fill(230, 230, 230);
+    ellipse(190, 360, 150, 100);
+    ellipse(310, 360, 150, 100);
+    fill(200,100,100);
+    rect(100, 370, 300, 100, 10);
+  
 
   } else if (room == "bathroom") {
     // Pale blue walls
@@ -543,6 +679,132 @@ function drawRoom() {
   }
 }
 
+function drawGarden() {
+  // Wooden garden bed
+  fill(115, 75, 45);
+  stroke(80, 50, 30);
+  strokeWeight(4);
+  rect(570, 490, 155, 95, 10);
+
+  // Soil
+  noStroke();
+  fill(85, 55, 35);
+  rect(580, 500, 135, 75, 6);
+
+  if (!gardenPlanted) {
+    // Empty garden
+    fill(200, 175, 125);
+    ellipse(647, 538, 35, 14);
+
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(13);
+    text("Empty plot", 647, 560);
+
+  } else if (Date.now() < gardenReadyAt) {
+    // Growing plant
+    stroke(35, 110, 45);
+    strokeWeight(5);
+    line(647, 555, 647, 525);
+
+    noStroke();
+    fill(70, 180, 75);
+    ellipse(635, 535, 20, 10);
+    ellipse(659, 529, 20, 10);
+
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(12);
+    text("Growing...", 647, 565);
+
+  } else {
+    // Berry bush
+    stroke(35, 110, 45);
+    strokeWeight(5);
+    line(647, 558, 647, 522);
+
+    noStroke();
+    fill(55, 150, 65);
+    ellipse(628, 532, 35, 28);
+    ellipse(650, 523, 38, 32);
+    ellipse(669, 535, 32, 25);
+
+    // Berries
+    fill(210, 35, 70);
+    circle(630, 531, 13);
+    circle(650, 521, 13);
+    circle(665, 536, 13);
+
+    fill(255);
+    textAlign(CENTER, CENTER);
+    textSize(12);
+    text("Ready!", 647, 565);
+  }
+
+  // Restore text alignment
+  textAlign(LEFT, BASELINE);
+}
+
+function drawNamingScreen() {
+  background(120, 180, 220);
+
+  fill(255);
+  textAlign(CENTER);
+  textSize(32);
+  text("Name your Eevee!", width / 2, 200);
+
+  textSize(20);
+  text("Choose a name for your pet:", width / 2, 270);
+}
+
+function drawGardenSeedMenu() {
+  fill(240, 230, 200);
+  stroke(80, 60, 40);
+  strokeWeight(3);
+  rect(230, 220, 340, 300, 12);
+
+  noStroke();
+  fill(40);
+  textAlign(CENTER, CENTER);
+  textSize(24);
+  text("Choose a Seed", 400, 250);
+
+  let seedsFound = 0;
+
+  for (let i = 0; i < inventory.length; i++) {
+    let item = shopItems.find(
+      shopItem => shopItem.id === inventory[i]
+    );
+
+    if (item && item.type === "seed") {
+      let y = 285 + seedsFound * 55;
+
+      fill(210, 200, 170);
+      rect(255, y - 20, 290, 45, 8);
+
+      fill(30);
+      textSize(18);
+      text(item.name, 400, y + 2);
+
+      seedsFound++;
+    }
+  }
+
+  if (seedsFound === 0) {
+    fill(80);
+    textSize(16);
+    text("You don't have any seeds!", 400, 330);
+  }
+
+  fill(180, 80, 80);
+  rect(335, 460, 130, 35, 8);
+
+  fill(255);
+  textSize(16);
+  text("Close", 400, 478);
+
+  textAlign(LEFT, BASELINE);
+}
 
 function drawRoomButton(x, y, w, h, label, roomName) {
   imageMode(CENTER);
@@ -718,6 +980,7 @@ function sellItem() {
 }
 
 
+
 function useItem() {
   if (selectedItem < 0 || selectedItem >= inventory.length) {
     return;
@@ -728,8 +991,8 @@ function useItem() {
 
   if (!item) return;
 
+  // Evolution stones
   if (item.type === "evolution") {
-
     if (species !== "Eevee") {
       itemMessage = "Cannot evolve this Pokemon!";
       return;
@@ -737,34 +1000,56 @@ function useItem() {
 
     species = item.evolves;
     storeItem("species", species);
-
     itemMessage = "Evolved into " + species + "!";
+
+  // Devolution Stone
   } else if (item.type === "devolution") {
+    if (species === "Eevee") {
+      itemMessage = "Already an Eevee!";
+      return;
+    }
 
-  if (species === "Eevee") {
-    itemMessage = "Already an Eevee!";
-    return;
-  }
+    species = "Eevee";
+    storeItem("species", species);
+    itemMessage = "Changed back into Eevee!";
 
-  species = "Eevee";
-  storeItem("species", species);
-  itemMessage = "Changed back into Eevee!";
+  // Berry Seed
+  } else if (item.type === "seed") {
+    if (room !== "outside") {
+      itemMessage = "You can only plant seeds outside!";
+      return;
+    }
+
+    if (gardenPlanted) {
+      itemMessage = "You already planted a seed!";
+      return;
+    }
+
+    gardenPlanted = true;
+    gardenReadyAt = Date.now() + gardenGrowTime;
+
+    storeItem("gardenPlanted", gardenPlanted);
+    storeItem("gardenReadyAt", gardenReadyAt);
+
+    itemMessage = "Planted! Berries grow in 30 seconds.";
+
+  // Food
   } else if (item.type === "food") {
-
     changeStat("hunger", item.hunger);
-
     itemMessage = "Fed " + species + "!";
+
   } else {
     itemMessage = "Cannot use this item!";
     return;
   }
 
-  // Remove the used item
+  // Remove the used item after successful use
   inventory.splice(selectedItem, 1);
   selectedItem = -1;
 
   storeItem("inventory", inventory);
 }
+
 
 function drawInventory(x,y,w,h) {
   if (
@@ -776,6 +1061,54 @@ function drawInventory(x,y,w,h) {
   image(imgInventoryOff,x,y,w,h);
 }
 }
+
+function drawSettings(x,y,w,h) {
+  if (
+    mouseX >= x - 60 && mouseX <= x + 60 &&
+    mouseY >= y - 60 && mouseY <= y + 60
+  ) {
+    image(imgSettingsOn,x,y,w + 10, h + 10);
+  } else {
+    image(imgSettingsOff,x,y,w,h);
+  }
+}
+
+function drawSettingsMenu() {
+  imageMode(CORNER);
+
+  fill(230, 220, 190);
+  stroke(80);
+  strokeWeight(3);
+  rect(150, 150, 500, 500, 15);
+
+  noStroke();
+  fill(0);
+  textAlign(CENTER, CENTER);
+  textSize(30);
+  text("Settings", 400, 185);
+
+  if (resetConfirm) {
+    textSize(20);
+    text("Are you sure you want to reset?", 400, 280);
+
+    drawButton(230, 350, 150, 55, "Yes, reset");
+    drawButton(420, 350, 150, 55, "Cancel");
+
+  } else if (settingsNameMode) {
+    textSize(18);
+    text("Enter your pet's new name:", 400, 280);
+
+  } else {
+    textSize(18);
+    text("Pet name: " + petName, 400, 245);
+
+    drawButton(230, 280, 150, 55, "Change Name");
+    drawButton(420, 280, 150, 55, "Reset Game");
+  }
+
+  textAlign(LEFT, BASELINE);
+}
+
 
 function drawInventoryMenu() {
   imageMode(CORNER);
@@ -955,6 +1288,157 @@ function mouseWheel(event) {
 }
 
 function mousePressed() {
+  // Garden seed menu
+if (gardenSeedMenu) {
+
+  // Close button
+  if (
+    mouseX >= 335 && mouseX <= 465 &&
+    mouseY >= 460 && mouseY <= 495
+  ) {
+    gardenSeedMenu = false;
+    return;
+  }
+
+  let seedsFound = 0;
+
+  for (let i = 0; i < inventory.length; i++) {
+    let item = shopItems.find(
+      shopItem => shopItem.id === inventory[i]
+    );
+
+    if (item && item.type === "seed") {
+      let y = 285 + seedsFound * 55;
+
+      if (
+        mouseX >= 255 && mouseX <= 545 &&
+        mouseY >= y - 20 && mouseY <= y + 25
+      ) {
+        if (gardenPlanted) {
+          itemMessage = "This plot is already planted!";
+          gardenSeedMenu = false;
+          return;
+        }
+
+        // Plant the selected seed
+        gardenPlanted = true;
+        gardenReadyAt = Date.now() + gardenGrowTime;
+
+        // Remove the seed from inventory
+        inventory.splice(i, 1);
+
+        storeItem("inventory", inventory);
+        storeItem("gardenPlanted", gardenPlanted);
+        storeItem("gardenReadyAt", gardenReadyAt);
+
+        itemMessage = "Seed planted!";
+        gardenSeedMenu = false;
+        return;
+      }
+
+      seedsFound++;
+    }
+  }
+
+  return;
+}
+
+// Click the garden plot
+if (
+  room === "outside" &&
+  mouseX >= 570 && mouseX <= 725 &&
+  mouseY >= 490 && mouseY <= 585
+) {
+  if (!gardenPlanted) {
+    gardenSeedMenu = true;
+    return;
+  }
+
+  if (Date.now() < gardenReadyAt) {
+    itemMessage = "Your plant is still growing!";
+    return;
+  }
+
+  if (inventory.length >= inventorySlots) {
+    itemMessage = "Your inventory is full!";
+    return;
+  }
+
+  // Harvest a Berry
+  addItem("berry");
+
+  // Start the next growing cycle
+  gardenReadyAt = Date.now() + gardenGrowTime;
+  storeItem("gardenReadyAt", gardenReadyAt);
+
+  itemMessage = "You harvested a Berry!";
+  return;
+}
+
+// SETTINGS MENU
+if (settingsOpen) {
+
+
+  if (settingsNameMode) {
+    return;
+  }
+
+  // Reset confirmation
+  if (resetConfirm) {
+
+    // Yes
+    if (
+      mouseX >= 230 && mouseX <= 380 &&
+      mouseY >= 350 && mouseY <= 405
+    ) {
+      resetGame();
+      return;
+    }
+
+    // Cancel
+    if (
+      mouseX >= 420 && mouseX <= 570 &&
+      mouseY >= 350 && mouseY <= 405
+    ) {
+      resetConfirm = false;
+      return;
+    }
+
+    return;
+  }
+
+  // Change name
+  if (
+    mouseX >= 230 && mouseX <= 380 &&
+    mouseY >= 280 && mouseY <= 335
+  ) {
+    settingsNameMode = true;
+
+    settingsNameInput.value(petName);
+    settingsNameInput.show();
+    saveNameButton.show();
+    cancelNameButton.show();
+
+    return;
+  }
+
+  // Reset game
+  if (
+    mouseX >= 420 && mouseX <= 570 &&
+    mouseY >= 280 && mouseY <= 335
+  ) {
+    resetConfirm = true;
+    return;
+  }
+
+  // Prevent clicking through the settings window
+  if (
+    mouseX >= 150 && mouseX <= 650 &&
+    mouseY >= 150 && mouseY <= 650
+  ) {
+    return;
+  }
+}
 
   // INVENTORY
   if (inventoryOpen) {
@@ -1033,12 +1517,13 @@ function mousePressed() {
 
 
   // INVENTORY BUTTON
-  if (
-    mouseX > 650 && mouseX < 770 &&
+  if (//440,70,130,130
+    mouseX > 380 && mouseX < 500 &&
     mouseY > 15 && mouseY < 120
   ) {
     inventoryOpen = !inventoryOpen;
     shopOpen = false;
+    settingsOpen = false;
     selectedItem = -1;
     itemMessage = "";
     return;
@@ -1046,40 +1531,77 @@ function mousePressed() {
 
   // SHOP BUTTON
   if (
-    mouseX > 460 && mouseX < 580 &&
+    mouseX > 530 && mouseX < 650 &&
     mouseY > 15 && mouseY < 120
   ) {
     shopOpen = !shopOpen;
     inventoryOpen = false;
+    settingsOpen = false;
     itemMessage = "";
     return;
   }
 
-  // ACTION BUTTON
-  if (
-    mouseX >= 265 && mouseX <= 535 &&
-    mouseY >= 620 && mouseY <= 720
-  ) {
+ // SETTINGS BUTTON
+if (
+  mouseX > 680 && mouseX < 780 &&
+  mouseY > 15 && mouseY < 120
+) {
+  shopOpen = false;
+  settingsOpen = !settingsOpen;
+  inventoryOpen = false;
+  resetConfirm = false;
+  closeNameEditor();
+  itemMessage = "";
+  return;
+}
 
-    if (rooms == 0) {
+  
+// ACTION BUTTON
+if (
+  mouseX >= 265 && mouseX <= 535 &&
+  mouseY >= 620 && mouseY <= 720
+) {
+  if (rooms === 0) {
+    // Outside
+    if (gardenPlanted && Date.now() >= gardenReadyAt) {
+      if (inventory.length >= inventorySlots) {
+        itemMessage = "Inventory is full!";
+        return;
+      }
+
+      addItem("berry");
+
+      gardenReadyAt = Date.now() + gardenGrowTime;
+      storeItem("gardenReadyAt", gardenReadyAt);
+
+      itemMessage = "Harvested a berry!";
+    } else if (gardenPlanted) {
+      itemMessage = "The berries are still growing!";
+      return;
+    } else {
       changeStat("happiness", 40);
       changeStat("energie", -20);
-
-    } else if (rooms == 1) {
-      changeStat("hunger", 20);
-      changeStat("energie", 10);
-
-    } else if (rooms == 2) {
-      changeStat("energie", 20);
-
-    } else if (rooms == 3) {
-      changeStat("health", 20);
-      changeStat("happiness", -10);
     }
 
-    gainXP(25);
-    return;
+  } else if (rooms === 1) {
+    // Kitchen
+    changeStat("hunger", 20);
+    changeStat("energie", 10);
+
+  } else if (rooms === 2) {
+    // Bedroom
+    changeStat("energie", 20);
+
+  } else if (rooms === 3) {
+    // Bathroom
+    changeStat("health", 20);
+    changeStat("happiness", -10);
   }
+
+  gainXP(25);
+  save();
+  return;
+}
 
   // LEFT ARROW
   if (
@@ -1140,11 +1662,12 @@ function getCondition() {
 };
 
 function drawPet() {
+  
   let condition = getCondition();
 
   let sprite = petSprites[species]?.[condition];
 
-  // Use normal sprite if condition sprite is missing
+  //if sprite is not found
   if (!sprite) {
     sprite = petSprites[species]?.normal;
   }
@@ -1158,15 +1681,21 @@ function drawPet() {
   pop();
 }
 
+
 function gainXP(amount) {
   xp += amount;
 
-  while (xp >= level * 100) {
-    xp -= level * 100;
+  if (xp >= level * 100) {
+    xp = 0;
     level++;
+    coins = coins + 50;
+
     console.log("Level up! Level:", level);
   }
+
+  save();
 }
+
 
 function save() {
   storeItem("stats", stats);
@@ -1174,8 +1703,66 @@ function save() {
   storeItem("xp", xp);
 }
 
+function closeNameEditor() {
+  settingsNameMode = false;
+
+  settingsNameInput.hide();
+  saveNameButton.hide();
+  cancelNameButton.hide();
+}
+
+//cheat code for testing
 function keyPressed() {
   if (key === 'r') {
    coins = coins + 100
   }
+}
+
+function resetGame() {
+
+  // Reset pet
+  petName = "Eevee";
+  species = "Eevee";
+
+  stats = [
+    { name: "happiness", rate: 70 },
+    { name: "energie", rate: 90 },
+    { name: "hunger", rate: 60 },
+    { name: "health", rate: 100 }
+  ];
+ 
+  level = 1;
+  xp = 0;
+
+  coins = 200;
+  inventory = [];
+  selectedItem = -1;
+
+  gardenPlanted = false;
+  gardenReadyAt = 0;
+  gardenSeedMenu = false;
+
+  rooms = 1;
+  room = "kitchen";
+
+  settingsOpen = false;
+  inventoryOpen = false;
+  shopOpen = false;
+  settingsNameMode = false;
+ 
+  closeNameEditor();
+
+  itemMessage = "";
+
+  storeItem("petName", petName);
+  storeItem("species", species);
+  storeItem("stats", stats);
+  storeItem("level", level);
+  storeItem("xp", xp);
+  storeItem("coins", coins);
+  storeItem("inventory", inventory);
+  storeItem("gardenPlanted", gardenPlanted);
+  storeItem("gardenReadyAt", gardenReadyAt);
+
+  console.log("Game has been reset!");
 }
