@@ -239,6 +239,8 @@ if (savedGardenReadyAt !== null) {
     sick: imgJolteonSick,
     hungry: imgJolteonHungry
   },
+  //to be added. 
+  //i did not have time to make the sprites for the other evolutions so i left them blank for now
   Flareon: {
     normal: "",
     sleepy: "",
